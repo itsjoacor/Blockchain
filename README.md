@@ -1,2 +1,5 @@
-# Blockchain
-Proyecto blockchain nft
+PARTE 1: 
+
+PARTE 2: 
+
+PARTE 3:
