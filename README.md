@@ -135,6 +135,14 @@ Estas son algunas validaciones personalizables para ambos flujos:
 ---
 
 ## 📎 Requisitos para ejecutar (próximamente)
+## 📎 COSAS JOACO
+   - Fijarse de mandar el proyecto de la notebook para agregarle ABI actualizado y poder extraer datos Pablo nftreader
+## 📎 DUDAS 
+   - Cuales son los criterios a verificar de cada flow
+   - Debo dejar poner la direccion del contrato que quiero ver NFTs? Que pasa si tengo otros NFTs del mismo tipo. Tengo que darle la direccion de un contrato no de "Che traeme los erc1155 de esta wallet, pudo haber jugado con otros"
+   - Revisar flujo si se entendio bien o no
+   - 
+   
 
 ```bash
 git clone https://github.com/tuusuario/tu-repo.git
