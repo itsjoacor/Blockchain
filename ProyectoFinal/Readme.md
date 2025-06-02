@@ -107,6 +107,7 @@ Permitir que un usuario conecte su wallet y visualice sus NFTs de **un contrato 
 | Variable      | Descripción                                     |
 |---------------|--------------------------------------------------|
 | `contractAddress` | Contrato fijo usado en Flow 1                     |
+| `contractAddress2` | puede haber otra para el flow 3 que visualice?                |
 | `w1`             | Wallet fija para recibir NFT "P" (Flow 2)         |
 | `w2`, `w3`       | Wallets fijas para recibir NFT "TP" (Flow 1)      |
 
