@@ -50,8 +50,8 @@ Permitir que el usuario conecte su wallet, visualice sus NFTs, y si **cumple cie
 
 4. **Verificación de requisitos globales**
    - Se ejecuta una validación sobre el **conjunto total de NFTs**.
-   - Ejemplo: cantidad total de NFTs, IDs presentes, balance acumulado, etc.
-   - Si se cumplen los requisitos, se habilita la siguiente etapa.  **Si no valida Flow 1 bis**
+   - Ejemplo: cantidad total de NFTs, IDs presentes, otras caracteristicas, etc.
+   - Si se cumplen los requisitos, se habilita la siguiente etapa (boton creacion nft).  **Si no valida Flow 1 bis** -> NO PUEDE PASAR. QUE ESTE COMO ERR
 
 5. **Formulario de Minteo**
    - El usuario completa datos en un formulario (por definir).
@@ -87,7 +87,7 @@ Permitir que un usuario conecte su wallet y visualice sus NFTs de **un contrato 
 
 4. **Validación para promoción**
    - Se hace una verificación sobre **la totalidad de NFTs poseídos**.
-   - Si los cumple, se habilita la opción de promoción. **Si no valida Flow 2 bis**
+   - Si los cumple, se habilita la opción de promoción (botón). **Si no valida Flow 2 bis** -> NO PUEDE PASAR. QUIERO PROMOCIONAR
 
 5. **Formulario de Minteo**
    - El usuario completa los datos requeridos.
@@ -106,8 +106,8 @@ Permitir que un usuario conecte su wallet y visualice sus NFTs de **un contrato 
 
 | Variable      | Descripción                                     |
 |---------------|--------------------------------------------------|
-| `contractAddress` | Contrato fijo usado en Flow 1                     |
-| `contractAddress2` | puede haber otra para el flow 3 que visualice?                |
+| `contractAddress` | Contrato fijo usado en Flow 1                    |
+| `contractAddress2` | puede haber otra para el flow 3 que visualice?  |
 | `w1`             | Wallet fija para recibir NFT "P" (Flow 2)         |
 | `w2`, `w3`       | Wallets fijas para recibir NFT "TP" (Flow 1)      |
 
