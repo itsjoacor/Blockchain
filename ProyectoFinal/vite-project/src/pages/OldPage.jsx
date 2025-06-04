@@ -3,7 +3,6 @@ import { ethers } from "ethers";
 
 const ERC1155_CONTRACT_ADDRESS = "0x1FEe62d24daA9fc0a18341B582937bE1D837F91d";
 
-// ABI con balanceOf, uri y datosDeClases
 const ERC1155_ABI = [
   {
     inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
@@ -33,6 +32,18 @@ const ERC1155_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    anonymous: false,
+    inputs: [
+      { indexed: true, internalType: "address", name: "operator", type: "address" },
+      { indexed: true, internalType: "address", name: "from", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
+      { indexed: false, internalType: "uint256", name: "id", type: "uint256" },
+      { indexed: false, internalType: "uint256", name: "value", type: "uint256" }
+    ],
+    name: "TransferSingle",
+    type: "event"
+  }
 ];
 
 const MAX_TOKEN_ID = 100;
@@ -49,12 +60,32 @@ export default function Start() {
     }
 
     try {
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
       setWallet(accounts[0]);
     } catch (error) {
       console.error("❌ Error al conectar Metamask:", error);
+    }
+  };
+
+  const getMintEvent = async (contract, provider, tokenId) => {
+    try {
+      const filter = contract.filters.TransferSingle(null, ethers.constants.AddressZero);
+      const events = await contract.queryFilter(filter, 0, "latest");
+
+      for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        if (event.args.id.toString() === tokenId.toString()) {
+          const block = await provider.getBlock(event.blockNumber);
+          return {
+            minteadoPor: event.args.to,
+            fecha: new Date(block.timestamp * 1000).toLocaleString(),
+          };
+        }
+      }
+      return null;
+    } catch (err) {
+      console.warn(`⚠️ No se pudo obtener evento de minteo para ID ${tokenId}`, err);
+      return null;
     }
   };
 
@@ -66,7 +97,7 @@ export default function Start() {
 
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = await provider.getSigner();
+      const signer = provider.getSigner();
       const contract = new ethers.Contract(
         ERC1155_CONTRACT_ADDRESS,
         ERC1155_ABI,
@@ -80,10 +111,7 @@ export default function Start() {
 
         if (balance && balance.toString() !== "0") {
           const rawUri = await contract.uri(id);
-          const tokenUri = rawUri.replace(
-            "{id}",
-            id.toString(16).padStart(64, "0")
-          );
+          const tokenUri = rawUri.replace("{id}", id.toString(16).padStart(64, "0"));
 
           let metadata = {};
           try {
@@ -103,21 +131,21 @@ export default function Start() {
             tema = datos.tema || "-";
             alumno = datos.alumno || wallet;
           } catch (err) {
-            console.warn(
-              `⚠️ No se pudieron obtener los datos de clase para ID ${id}`,
-              err
-            );
+            console.warn(`⚠️ No se pudieron obtener los datos de clase para ID ${id}`, err);
           }
+
+          const mintInfo = await getMintEvent(contract, provider, id);
 
           ownedNFTs.push({
             id,
             balance: balance.toString(),
             title: metadata.name || `NFT ${id}`,
-            image:
-              metadata.image || "https://via.placeholder.com/300?text=No+Image",
+            image: metadata.image || "https://via.placeholder.com/300?text=No+Image",
             clase,
             tema,
             alumno,
+            minteadoPor: mintInfo?.minteadoPor || "Desconocido",
+            fechaMint: mintInfo?.fecha || "Desconocida",
           });
         }
       }
@@ -157,9 +185,7 @@ export default function Start() {
           </button>
 
           {loading && (
-            <p className="mt-4 text-gray-400">
-              🔄 Cargando NFTs desde contrato...
-            </p>
+            <p className="mt-4 text-gray-400">🔄 Cargando NFTs desde contrato...</p>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
@@ -181,23 +207,16 @@ export default function Start() {
                 <div className="mt-4">
                   <h3 className="text-xl font-semibold">{nft.title}</h3>
                   <p className="text-gray-300 text-sm mt-1">
-                    Token de participación en una clase del Seminario de
-                    Introducción a Blockchain, otorgado por la Universidad
-                    Nacional de Quilmes.
+                    Token de participación en una clase del Seminario de Introducción a Blockchain,
+                    otorgado por la Universidad Nacional de Quilmes.
                   </p>
 
                   <div className="mt-4 text-sm space-y-1">
-                    <p>
-                      <span className="font-semibold">🎯 Token ID:</span>{" "}
-                      {nft.id}
-                    </p>
-                    <p>
-                      <span className="font-semibold">📚 Tema:</span> {nft.tema}
-                    </p>
-                    <p>
-                      <span className="font-semibold">🧑 Alumno:</span>{" "}
-                      {nft.alumno}
-                    </p>
+                    <p><span className="font-semibold">🎯 Token ID:</span> {nft.id}</p>
+                    <p><span className="font-semibold">📚 Tema:</span> {nft.tema}</p>
+                    <p><span className="font-semibold">🧑 Alumno:</span> {nft.alumno}</p>
+                    <p><span className="font-semibold">🏭 Minteado por:</span> {nft.minteadoPor}</p>
+                    <p><span className="font-semibold">📅 Fecha de minteo:</span> {nft.fechaMint}</p>
                   </div>
                 </div>
               </div>

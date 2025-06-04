@@ -4,7 +4,7 @@ export default function Instructions() {
   const navigate = useNavigate();
 
   const handleStart = () => {
-    navigate("/validacion"); // reemplazá por la ruta real
+    navigate("/fetchAndVal"); // reemplazá por la ruta real
   };
 
   return (
