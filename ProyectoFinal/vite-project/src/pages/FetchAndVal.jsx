@@ -1,258 +1,357 @@
 import React, { useState } from "react";
-import { Alchemy, Network } from "alchemy-sdk";
+import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 
+const ERC1155_CONTRACT_ADDRESS = "0x1FEe62d24daA9fc0a18341B582937bE1D837F91d";
 
-const ALCHEMY_API_KEY = "TTecTP8-drgMcfnoeoO6PH1YwI48YWI5";
-const MORALIS_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6IjhkNDg2ZDBmLWRiYTAtNDJlOC1iNGVhLTQ0ZGYxZjc3NmVmNSIsIm9yZ0lkIjoiNDUwODI3IiwidXNlcklkIjoiNDYzODY1IiwidHlwZUlkIjoiZmRkNjU3OWQtN2MyNi00Yzk3LWI5M2YtZWQ0NDVhNmFmODhkIiwidHlwZSI6IlBST0pFQ1QiLCJpYXQiOjE3NDg5OTQyOTQsImV4cCI6NDkwNDc1NDI5NH0.1zcyJ8YwLhbDKRMwKa7DhEPgbKQxGu53RqBqNocPIcU"; // ← reemplazá por la tuya
-const CONTRACT_ADDRESS = "0x1FEe62d24daA9fc0a18341B582937bE1D837F91d".toLowerCase();
-const FECHA_CORTE = new Date("2025-05-28T00:00:00Z");
-const NULL_ADDRESS = "0x0000000000000000000000000000000000000000";
+const ERC1155_ABI = [
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "datosDeClases",
+    outputs: [
+      { internalType: "uint256", name: "clase", type: "uint256" },
+      { internalType: "string", name: "tema", type: "string" },
+      { internalType: "address", name: "alumno", type: "address" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    name: "uri",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "account", type: "address" },
+      { internalType: "uint256", name: "id", type: "uint256" },
+    ],
+    name: "balanceOf",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "operator",
+        type: "address",
+      },
+      { indexed: true, internalType: "address", name: "from", type: "address" },
+      { indexed: true, internalType: "address", name: "to", type: "address" },
+      { indexed: false, internalType: "uint256", name: "id", type: "uint256" },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
+    ],
+    name: "TransferSingle",
+    type: "event",
+  },
+];
 
-// Alchemy SDK config
-const alchemy = new Alchemy({
-  apiKey: ALCHEMY_API_KEY,
-  network: Network.ETH_SEPOLIA,
-});
+const MAX_TOKEN_ID = 100;
 
-// 🧠 Fallback Moralis → Alchemy para detectar dirección de minteo
-const obtenerMinteoConFallback = async (contract, tokenId, wallet) => {
-  const tokenIdDecimal =
-    typeof tokenId === "string" && tokenId.startsWith("0x")
-      ? parseInt(tokenId, 16).toString()
-      : parseInt(tokenId).toString();
-
-  const moralisUrl = `https://deep-index.moralis.io/api/v2/nft/${contract}/${tokenIdDecimal}/transfers?chain=sepolia&format=decimal&limit=100`;
-
-  try {
-    const res = await fetch(moralisUrl, {
-      headers: { "X-API-Key": MORALIS_API_KEY },
-    });
-
-    const data = await res.json();
-    const eventos = data.result || [];
-
-    if (eventos.length > 0) {
-      const e = eventos[0];
-      return {
-        from: e.from_address || "Desconocida",
-        to: e.to_address || "Desconocido",
-        fuente: "moralis",
-      };
-    }
-  } catch (err) {
-    console.warn("⚠️ Moralis falló, intento con Alchemy...");
-  }
-
-  try {
-    const alchemyResult = await alchemy.nft.getNftTransfersForNft(contract, tokenId);
-    const primer = alchemyResult.transfers?.[0];
-
-    return {
-      from: primer?.from || "Desconocida",
-      to: primer?.to || "Desconocido",
-      fuente: "alchemy",
-    };
-  } catch (err) {
-    console.error("❌ Alchemy también falló:", err);
-  }
-
-  return {
-    from: "Desconocida",
-    to: "Desconocido",
-    fuente: "ninguna",
-  };
-};
-
-export default function Validacion() {
+export default function Start() {
   const [wallet, setWallet] = useState(null);
   const [nfts, setNfts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [resultado, setResultado] = useState(null);
-  const [reglas, setReglas] = useState([]);
+  const [validations, setValidations] = useState({
+    has10NFTs: false,
+    allMintedBeforeDate: false,
+  });
   const navigate = useNavigate();
-  
 
- 
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      alert("Instalá Metamask");
+      return;
+    }
 
+    try {
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      setWallet(accounts[0]);
+    } catch (error) {
+      console.error("❌ Error al conectar Metamask:", error);
+    }
+  };
 
+  const getMintEvent = async (contract, provider, tokenId) => {
+    try {
+      const filter = contract.filters.TransferSingle(
+        null,
+        ethers.constants.AddressZero
+      );
+      const events = await contract.queryFilter(filter, 0, "latest");
 
-const connectWallet = async () => {
-  if (!window.ethereum) return alert("Instalá MetaMask");
-  try {
-    const accounts = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    });
-    setWallet(accounts[0]);
-  } catch (err) {
-    console.error("Error conectando wallet:", err);
-  }
-};
+      for (let i = 0; i < events.length; i++) {
+        const event = events[i];
+        if (event.args.id.toString() === tokenId.toString()) {
+          const block = await provider.getBlock(event.blockNumber);
+          return {
+            minteadoA: event.args.to,
+            minteadoPor: event.args.operator,
+            fecha: new Date(block.timestamp * 1000).toLocaleString(),
+            esMinteadoDesdeCero: true,
+          };
+        }
+      }
+      return { esMinteadoDesdeCero: false };
+    } catch (err) {
+      console.warn(
+        `⚠️ No se pudo obtener evento de minteo para ID ${tokenId}`,
+        err
+      );
+      return { esMinteadoDesdeCero: false };
+    }
+  };
 
-const fetchNFTsFromAlchemy = async () => {
-  if (!wallet) return alert("Conectá la wallet primero");
+  const fetchAllNFTs = async () => {
+    if (!wallet) return alert("Conectá la wallet primero");
 
-  setLoading(true);
-  setResultado(null);
-  setReglas([]);
-  setNfts([]);
+    setLoading(true);
+    setNfts([]);
 
-  try {
-    const data = await alchemy.nft.getNftsForOwner(wallet, {
-      contractAddresses: [CONTRACT_ADDRESS],
-      withMetadata: true,
-    });
+    try {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(
+        ERC1155_CONTRACT_ADDRESS,
+        ERC1155_ABI,
+        signer
+      );
 
-    const enriquecidos = await Promise.all(
-      data.ownedNfts.map(async (nft) => {
-        const id = parseInt(nft.tokenId, 16);
-        const metadata = nft.rawMetadata || {};
-        const tema = metadata.name || `NFT ${id}`;
-        const fecha = new Date(metadata.createdAt || "2025-05-20");
+      const ownedNFTs = [];
 
-        const { from, to } = await obtenerMinteoConFallback(
-          CONTRACT_ADDRESS,
-          nft.tokenId,
-          wallet
-        );
+      for (let id = 0; id < MAX_TOKEN_ID; id++) {
+        const balance = await contract.balanceOf(wallet, id);
 
-        return {
-          id,
-          tema,
-          fecha,
-          direccionDeMinteo: from,
-          esMinteadoDirectamente:
-            from.toLowerCase() === NULL_ADDRESS &&
-            to.toLowerCase() === wallet.toLowerCase(),
-        };
-      })
-    );
+        if (balance && balance.toString() !== "0") {
+          const rawUri = await contract.uri(id);
+          const tokenUri = rawUri.replace(
+            "{id}",
+            id.toString(16).padStart(64, "0")
+          );
 
-    setNfts(enriquecidos);
-  } catch (err) {
-    console.error("❌ Error al obtener NFTs o historial:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+          let metadata = {};
+          try {
+            const res = await fetch(tokenUri);
+            metadata = await res.json();
+          } catch {
+            metadata = { name: `NFT ${id}`, image: "", error: true };
+          }
 
-const validarNFTs = async () => {
-  if (!wallet || nfts.length === 0) return;
+          let clase = "-";
+          let tema = "-";
+          let alumno = wallet;
 
-  const cantidadOk = nfts.length === 10;
-  const fechasOk = nfts.every((n) => n.fecha < FECHA_CORTE);
-  const mintOk = nfts.every((n) => n.esMinteadoDirectamente);
+          try {
+            const datos = await contract.datosDeClases(id);
+            clase = datos.clase?.toString() || "-";
+            tema = datos.tema || "-";
+            alumno = datos.alumno || wallet;
+          } catch (err) {
+            console.warn(
+              `⚠️ No se pudieron obtener los datos de clase para ID ${id}`,
+              err
+            );
+          }
 
-  setReglas([
-    { regla: "Debe haber exactamente 10 NFTs", ok: cantidadOk },
-    { regla: "Todos deben estar emitidos antes del 28/05/2025", ok: fechasOk },
-    {
-      regla: "Todos deben haber sido minteados directamente hacia tu wallet",
-      ok: mintOk,
-    },
-  ]);
+          const mintInfo = await getMintEvent(contract, provider, id);
 
-  if (cantidadOk && fechasOk && mintOk) {
-    setResultado("✅ Validación exitosa. Podés continuar al minteo.");
-  } else {
-    setResultado("❌ Error: no cumplís con los requisitos.");
-  }
-};
+          ownedNFTs.push({
+            id,
+            balance: balance.toString(),
+            title: metadata.name || `NFT ${id}`,
+            image:
+              metadata.image || "https://via.placeholder.com/300?text=No+Image",
+            clase,
+            tema,
+            alumno,
+            minteadoA: mintInfo?.minteadoA || "Desconocido",
+            minteadoPor: mintInfo?.minteadoPor || "Desconocido",
+            fechaMint: mintInfo?.fecha || "Desconocida",
+            esMinteadoDesdeCero: mintInfo?.esMinteadoDesdeCero || false,
+          });
+        }
+      }
 
-return (
-  <div className="min-h-screen bg-gray-900 text-white p-6 overflow-y-auto">
-    <h1 className="text-3xl font-bold mb-6">🧪 Validación con Alchemy + Moralis</h1>
+      setNfts(ownedNFTs);
 
-    {!wallet ? (
-      <button
-        onClick={connectWallet}
-        className="bg-green-600 text-white px-4 py-2 rounded shadow"
-      >
-        🔌 Conectar Wallet
-      </button>
-    ) : (
-      <>
-        <p className="mb-4 text-sm text-gray-300">Wallet conectada: {wallet}</p>
+      // Check validations after fetching NFTs
+      const has10NFTs = ownedNFTs.length === 10;
 
+      // Check if all NFTs were minted before 28/05/2025 (timestamp: 1716854400)
+      const cutoffDate = new Date("2025-05-28").getTime();
+      const allMintedBeforeDate = ownedNFTs.every((nft) => {
+        if (nft.fechaMint === "Desconocida") return false;
+        const mintDate = new Date(nft.fechaMint).getTime();
+        return mintDate < cutoffDate;
+      });
+
+      setValidations({
+        has10NFTs,
+        allMintedBeforeDate,
+      });
+    } catch (err) {
+      console.error("❌ Error al obtener NFTs:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRedirect = () => {
+    navigate("/mint");
+  };
+
+  const allValidationsPassed =
+    validations.has10NFTs && validations.allMintedBeforeDate;
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white p-6 overflow-x-auto">
+      <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
+        🖼️ Tus NFTs (ERC-1155)
+      </h1>
+
+      {!wallet ? (
         <button
-          onClick={fetchNFTsFromAlchemy}
-          className="bg-blue-600 text-white px-4 py-2 rounded shadow"
+          onClick={connectWallet}
+          className="bg-green-600 text-white px-4 py-2 rounded shadow"
         >
-          📄 Obtener NFTs
+          🔌 Conectar Wallet
         </button>
-
-        {loading && (
-          <p className="mt-4 animate-pulse text-blue-300">
-            ⏳ Cargando NFTs y transferencias...
+      ) : (
+        <div>
+          <p className="mb-4 text-sm text-gray-300">
+            🔐 Wallet conectada: {wallet}
           </p>
-        )}
 
-        {nfts.length > 0 && (
-          <>
-            <h2 className="mt-6 text-xl font-semibold">🎯 NFTs encontrados:</h2>
-            <ul className="mt-2 space-y-2 text-sm text-gray-200">
-              {nfts.map((nft) => (
-                <li key={nft.id} className="border-b border-gray-700 pb-2">
-                  <p>
-                    <strong>ID:</strong> {nft.id} — <strong>Tema:</strong> {nft.tema}
-                  </p>
-                  <p>
-                    📅 Fecha: {nft.fecha.toLocaleDateString()} <br />
-                    🧾 Minteado desde:{" "}
-                    <span
-                      className={
-                        nft.direccionDeMinteo.toLowerCase() === NULL_ADDRESS
-                          ? "text-green-400"
-                          : "text-red-400"
-                      }
-                    >
-                      {nft.direccionDeMinteo}
-                    </span>
-                  </p>
+          <button
+            onClick={fetchAllNFTs}
+            className="bg-blue-600 text-white px-4 py-2 rounded shadow"
+          >
+            📥 Obtener NFTs
+          </button>
+
+          {loading && (
+            <p className="mt-4 text-gray-400">
+              🔄 Cargando NFTs desde contrato...
+            </p>
+          )}
+
+          {/* Validation Status */}
+          {nfts.length > 0 && (
+            <div className="mt-6 p-4 bg-gray-800 rounded-lg">
+              <h2 className="text-xl font-semibold mb-3">Validaciones:</h2>
+              <ul className="space-y-2">
+                <li
+                  className={`flex items-center ${
+                    validations.has10NFTs ? "text-green-400" : "text-red-400"
+                  }`}
+                >
+                  {validations.has10NFTs ? "✓" : "✗"} Tienes exactamente 10 NFTs
                 </li>
-              ))}
-            </ul>
-
-            <button
-              onClick={validarNFTs}
-              className="mt-6 bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded shadow"
-            >
-              ✅ Validar NFTs
-            </button>
-          </>
-        )}
-
-        {reglas.length > 0 && (
-          <div className="mt-6 space-y-2">
-            <h2 className="text-lg font-semibold">📋 Reglas aplicadas:</h2>
-            <ul className="text-sm space-y-1 text-gray-200">
-              {reglas.map((r, idx) => (
-                <li key={idx}>
-                  {r.ok ? "✅" : "❌"} {r.regla}
+                <li
+                  className={`flex items-center ${
+                    validations.allMintedBeforeDate
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  {validations.allMintedBeforeDate ? "✓" : "✗"} Todos minteados
+                  antes del 28/05/2025
                 </li>
-              ))}
-            </ul>
-          </div>
-        )}
+              </ul>
 
-        {resultado && (
-          <div className="mt-6 text-center">
-            <p className="text-lg font-bold mb-4">{resultado}</p>
-            <button
-              onClick={() => navigate("/mint")}
-              disabled={resultado.startsWith("❌")}
-              className={`px-6 py-3 rounded font-semibold shadow ${resultado.startsWith("✅")
-                ? "bg-green-600 hover:bg-green-700 text-white"
-                : "bg-gray-600 text-white cursor-not-allowed"
-                }`}
-            >
-              {resultado.startsWith("✅") ? "Continuar" : "Validación incompleta"}
-            </button>
+              {allValidationsPassed ? (
+                <button
+                  onClick={handleRedirect}
+                  className="mt-4 bg-purple-600 text-white px-4 py-2 rounded shadow hover:bg-purple-700"
+                >
+                  🚀 Proceder a Mint
+                </button>
+              ) : (
+                <p className="mt-4 text-red-400">
+                  No cumples con todos los requisitos de validación.
+                </p>
+              )}
+            </div>
+          )}
 
-          </div>
-        )}
-      </>
-    )}
-  </div>
-);
+          {/* NFT Table */}
+          {nfts.length > 0 && (
+            <div className="mt-6 overflow-x-auto">
+              <table className="min-w-full table-auto border border-gray-700 text-sm">
+                <thead className="bg-indigo-800 text-white">
+                  <tr>
+                    <th className="px-4 py-2 border border-gray-700">ID</th>
+                    <th className="px-4 py-2 border border-gray-700">Título</th>
+                    <th className="px-4 py-2 border border-gray-700">Tema</th>
+                    <th className="px-4 py-2 border border-gray-700">Clase</th>
+                    <th className="px-4 py-2 border border-gray-700">Alumno</th>
+                    <th className="px-4 py-2 border border-gray-700">
+                      Minteado A
+                    </th>
+                    <th className="px-4 py-2 border border-gray-700">
+                      Minteado por
+                    </th>
+                    <th className="px-4 py-2 border border-gray-700">Fecha</th>
+                    <th className="px-4 py-2 border border-gray-700">
+                      Minteado desde 0x0
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {nfts.map((nft, idx) => (
+                    <tr key={idx} className="hover:bg-gray-800">
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.id}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.title}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.tema}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.clase}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.alumno}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.minteadoA}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.minteadoPor}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.fechaMint}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.esMinteadoDesdeCero ? "Sí" : "No"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {!loading && nfts.length === 0 && (
+            <p className="mt-6 text-gray-500">No se encontraron NFTs.</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
 }

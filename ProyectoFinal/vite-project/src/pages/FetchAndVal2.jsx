@@ -35,15 +35,25 @@ const ERC1155_ABI = [
   {
     anonymous: false,
     inputs: [
-      { indexed: true, internalType: "address", name: "operator", type: "address" },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "operator",
+        type: "address",
+      },
       { indexed: true, internalType: "address", name: "from", type: "address" },
       { indexed: true, internalType: "address", name: "to", type: "address" },
       { indexed: false, internalType: "uint256", name: "id", type: "uint256" },
-      { indexed: false, internalType: "uint256", name: "value", type: "uint256" }
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "value",
+        type: "uint256",
+      },
     ],
     name: "TransferSingle",
-    type: "event"
-  }
+    type: "event",
+  },
 ];
 
 const MAX_TOKEN_ID = 100;
@@ -60,7 +70,9 @@ export default function Start() {
     }
 
     try {
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const accounts = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
       setWallet(accounts[0]);
     } catch (error) {
       console.error("❌ Error al conectar Metamask:", error);
@@ -69,24 +81,38 @@ export default function Start() {
 
   const getMintEvent = async (contract, provider, tokenId) => {
     try {
-      const filter = contract.filters.TransferSingle(null, ethers.constants.AddressZero);
+      const filter = contract.filters.TransferSingle(
+        null,
+        null,
+        null,
+        null,
+        null
+      );
       const events = await contract.queryFilter(filter, 0, "latest");
 
       for (let i = 0; i < events.length; i++) {
         const event = events[i];
         if (event.args.id.toString() === tokenId.toString()) {
           const block = await provider.getBlock(event.blockNumber);
+          const fromAddress = event.args.from.toLowerCase();
+          const isMintedFromZero =
+            fromAddress === ethers.constants.AddressZero.toLowerCase();
+
           return {
             minteadoA: event.args.to,
             minteadoPor: event.args.operator,
             fecha: new Date(block.timestamp * 1000).toLocaleString(),
+            esMinteadoDesdeCero: isMintedFromZero,
           };
         }
       }
-      return null;
+      return { esMinteadoDesdeCero: false };
     } catch (err) {
-      console.warn(`⚠️ No se pudo obtener evento de minteo para ID ${tokenId}`, err);
-      return null;
+      console.warn(
+        `⚠️ No se pudo obtener evento de minteo para ID ${tokenId}`,
+        err
+      );
+      return { esMinteadoDesdeCero: false };
     }
   };
 
@@ -112,7 +138,10 @@ export default function Start() {
 
         if (balance && balance.toString() !== "0") {
           const rawUri = await contract.uri(id);
-          const tokenUri = rawUri.replace("{id}", id.toString(16).padStart(64, "0"));
+          const tokenUri = rawUri.replace(
+            "{id}",
+            id.toString(16).padStart(64, "0")
+          );
 
           let metadata = {};
           try {
@@ -132,7 +161,10 @@ export default function Start() {
             tema = datos.tema || "-";
             alumno = datos.alumno || wallet;
           } catch (err) {
-            console.warn(`⚠️ No se pudieron obtener los datos de clase para ID ${id}`, err);
+            console.warn(
+              `⚠️ No se pudieron obtener los datos de clase para ID ${id}`,
+              err
+            );
           }
 
           const mintInfo = await getMintEvent(contract, provider, id);
@@ -141,7 +173,8 @@ export default function Start() {
             id,
             balance: balance.toString(),
             title: metadata.name || `NFT ${id}`,
-            image: metadata.image || "https://via.placeholder.com/300?text=No+Image",
+            image:
+              metadata.image || "https://via.placeholder.com/300?text=No+Image",
             clase,
             tema,
             alumno,
@@ -187,7 +220,9 @@ export default function Start() {
           </button>
 
           {loading && (
-            <p className="mt-4 text-gray-400">🔄 Cargando NFTs desde contrato...</p>
+            <p className="mt-4 text-gray-400">
+              🔄 Cargando NFTs desde contrato...
+            </p>
           )}
 
           {nfts.length > 0 && (
@@ -200,22 +235,48 @@ export default function Start() {
                     <th className="px-4 py-2 border border-gray-700">Tema</th>
                     <th className="px-4 py-2 border border-gray-700">Clase</th>
                     <th className="px-4 py-2 border border-gray-700">Alumno</th>
-                    <th className="px-4 py-2 border border-gray-700">Minteado A</th>
-                    <th className="px-4 py-2 border border-gray-700">Minteado por</th>
+                    <th className="px-4 py-2 border border-gray-700">
+                      Minteado A
+                    </th>
+                    <th className="px-4 py-2 border border-gray-700">
+                      Minteado por
+                    </th>
                     <th className="px-4 py-2 border border-gray-700">Fecha</th>
+                    <th className="px-4 py-2 border border-gray-700">
+                      Minteado desde 0x0
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {nfts.map((nft, idx) => (
                     <tr key={idx} className="hover:bg-gray-800">
-                      <td className="px-4 py-2 border border-gray-700">{nft.id}</td>
-                      <td className="px-4 py-2 border border-gray-700">{nft.title}</td>
-                      <td className="px-4 py-2 border border-gray-700">{nft.tema}</td>
-                      <td className="px-4 py-2 border border-gray-700">{nft.clase}</td>
-                      <td className="px-4 py-2 border border-gray-700">{nft.alumno}</td>
-                      <td className="px-4 py-2 border border-gray-700">{nft.minteadoA}</td>
-                      <td className="px-4 py-2 border border-gray-700">{nft.minteadoPor}</td>
-                      <td className="px-4 py-2 border border-gray-700">{nft.fechaMint}</td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.id}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.title}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.tema}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.clase}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.alumno}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.minteadoA}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.minteadoPor}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.fechaMint}
+                      </td>
+                      <td className="px-4 py-2 border border-gray-700">
+                        {nft.esMinteadoDesdeCero ? "Sí" : "No"}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
