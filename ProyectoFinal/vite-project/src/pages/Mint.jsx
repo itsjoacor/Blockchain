@@ -2,160 +2,81 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 
-// Minimal ERC1155 Contract ABI and Bytecode (replace with your actual compiled contract)
-const ERC1155_ABI = [
-  "function mint(address to, uint256 id, uint256 amount, bytes memory data)",
-  "function balanceOf(address account, uint256 id) view returns (uint256)",
-  "function uri(uint256 id) view returns (string memory)"
-];
+const CONTRACT_ADDRESS = "0xa37bA077a062c60A018993694Acbd4759207DcEE";
 
-// Example ERC1155 bytecode - REPLACE WITH YOUR ACTUAL COMPILED CONTRACT BYTECODE
-const ERC1155_BYTECODE = "0x608060405234801561001057600080fd5b506101..."; // Shortened for example
+const ABI = [
+  // Solo dejamos lo que usás
+  {
+    inputs: [
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "string", name: "titulo", type: "string" },
+      { internalType: "string", name: "descripcion", type: "string" },
+      { internalType: "string", name: "nombre", type: "string" },
+      { internalType: "string", name: "fecha", type: "string" },
+      { internalType: "string", name: "imageUrl", type: "string" },
+    ],
+    name: "mintConMetadata",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+];
 
 const Mint = () => {
   const [wallet, setWallet] = useState(null);
-  const [contractAddress, setContractAddress] = useState("");
   const [nftData, setNftData] = useState({
     titulo: "",
     description: "",
     nombre: "",
     fecha: new Date().toISOString().split("T")[0],
     image: null,
-    imagePreview: ""
+    imagePreview: "",
   });
   const [isMinting, setIsMinting] = useState(false);
-  const [isDeploying, setIsDeploying] = useState(false);
   const [error, setError] = useState("");
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
   const connectWallet = async () => {
     if (!window.ethereum) {
-      setError("Please install MetaMask");
+      setError("Instala MetaMask");
       return;
     }
 
     try {
-      // Request account access
       await window.ethereum.request({ method: "eth_requestAccounts" });
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      
-      // Check network (Sepolia)
-      const network = await provider.getNetwork();
-      if (network.chainId !== 11155111) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: "0xaa36a7" }], // Sepolia chain ID
-          });
-        } catch (switchError) {
-          if (switchError.code === 4902) {
-            try {
-              await window.ethereum.request({
-                method: "wallet_addEthereumChain",
-                params: [{
-                  chainId: "0xaa36a7",
-                  chainName: "Sepolia Testnet",
-                  nativeCurrency: {
-                    name: "Sepolia ETH",
-                    symbol: "ETH",
-                    decimals: 18
-                  },
-                  rpcUrls: ["https://rpc.sepolia.org"],
-                  blockExplorerUrls: ["https://sepolia.etherscan.io"]
-                }],
-              });
-            } catch (addError) {
-              setError("Failed to add Sepolia network");
-              return;
-            }
-          } else {
-            setError("Failed to switch to Sepolia");
-            return;
-          }
-        }
-      }
-
       const accounts = await provider.listAccounts();
       setWallet(accounts[0]);
       setError("");
     } catch (err) {
-      setError("Failed to connect wallet: " + err.message);
+      setError("Error al conectar wallet: " + err.message);
     }
   };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        setError("Image must be less than 5MB");
-        return;
-      }
-      setNftData(prev => ({
+    if (file && file.size <= 5 * 1024 * 1024) {
+      setNftData((prev) => ({
         ...prev,
         image: file,
-        imagePreview: URL.createObjectURL(file)
+        imagePreview: URL.createObjectURL(file),
       }));
       setError("");
+    } else {
+      setError("La imagen debe pesar menos de 5MB");
     }
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNftData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const deployContract = async () => {
-    if (!wallet) {
-      setError("Please connect wallet first");
-      return;
-    }
-
-    setIsDeploying(true);
-    setError("");
-
-    try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-      
-      // Validate bytecode
-      if (!ERC1155_BYTECODE || ERC1155_BYTECODE === "0x") {
-        throw new Error("Contract bytecode not provided");
-      }
-
-      const factory = new ethers.ContractFactory(
-        ERC1155_ABI,
-        ERC1155_BYTECODE,
-        signer
-      );
-
-      const contract = await factory.deploy({
-        gasLimit: 5000000 // Higher gas limit for deployment
-      });
-
-      await contract.deployTransaction.wait();
-      setContractAddress(contract.address);
-      setError("");
-    } catch (err) {
-      console.error("Deployment error:", err);
-      setError("Failed to deploy contract: " + 
-        (err.message.includes("bytecode") 
-          ? "Invalid contract bytecode - please compile your contract and replace the bytecode" 
-          : err.message));
-    } finally {
-      setIsDeploying(false);
-    }
+    setNftData((prev) => ({ ...prev, [name]: value }));
   };
 
   const mintNFT = async () => {
-    if (!wallet || !contractAddress) {
-      setError("Please deploy contract first");
-      return;
-    }
-
+    if (!wallet) return setError("Conectá tu wallet primero");
     if (!nftData.titulo || !nftData.description || !nftData.image) {
-      setError("Please fill all required fields");
-      return;
+      return setError("Completá todos los campos obligatorios");
     }
 
     setIsMinting(true);
@@ -164,39 +85,27 @@ const Mint = () => {
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
-      const contract = new ethers.Contract(contractAddress, ERC1155_ABI, signer);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
 
-      // Generate token ID
-      const tokenId = ethers.BigNumber.from(
-        ethers.utils.keccak256(ethers.utils.toUtf8Bytes(`${Date.now()}`))
-      ).mod(1000000);
+      // Simulamos IPFS hash de la imagen
+      const simulatedIpfsImageUrl = "ipfs://placeholder-hash";
 
-      // Create metadata (in production, upload to IPFS)
-      const metadata = {
-        name: nftData.titulo,
-        description: nftData.description,
-        image: "ipfs://[will-be-replaced]",
-        attributes: [
-          { trait_type: "Nombre", value: nftData.nombre },
-          { trait_type: "Fecha", value: nftData.fecha }
-        ]
-      };
-
-      // Mint NFT
-      const tx = await contract.mint(
-        wallet, // Mint to yourself
-        tokenId,
-        1, // Amount
-        ethers.utils.toUtf8Bytes(JSON.stringify(metadata)),
+      const tx = await contract.mintConMetadata(
+        wallet,
+        nftData.titulo,
+        nftData.description,
+        nftData.nombre,
+        nftData.fecha,
+        simulatedIpfsImageUrl,
         { gasLimit: 500000 }
       );
 
       await tx.wait();
-      alert(`Successfully minted NFT with ID: ${tokenId}`);
+      alert("✅ NFT minteado exitosamente");
       navigate("/");
     } catch (err) {
-      console.error("Minting error:", err);
-      setError("Failed to mint NFT: " + err.message);
+      console.error(err);
+      setError("❌ Error al mintear: " + err.message);
     } finally {
       setIsMinting(false);
     }
@@ -204,115 +113,73 @@ const Mint = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-3xl font-bold mb-6">🎨 Create ERC1155 NFT (Sepolia)</h1>
+      <h1 className="text-3xl font-bold mb-6">🎨 Crear NFT (ERC-1155)</h1>
 
       {!wallet ? (
         <button
           onClick={connectWallet}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
         >
-          🔌 Connect Wallet
+          🔌 Conectar Wallet
         </button>
       ) : (
-        <div className="mb-4">
-          <p className="text-green-400">Connected: {wallet}</p>
-          <p className="text-sm text-gray-400">Network: Sepolia Testnet</p>
-          
-          {!contractAddress ? (
-            <button
-              onClick={deployContract}
-              disabled={isDeploying}
-              className={`mt-2 px-4 py-2 rounded ${
-                isDeploying 
-                  ? "bg-gray-600 cursor-not-allowed" 
-                  : "bg-purple-600 hover:bg-purple-700"
-              } text-white`}
-            >
-              {isDeploying ? "⏳ Deploying Contract..." : "🚀 Deploy Contract"}
-            </button>
-          ) : (
-            <div className="mt-2">
-              <p className="text-blue-400">Contract: {contractAddress}</p>
-            </div>
-          )}
-        </div>
+        <p className="mb-4 text-green-400">Wallet conectada: {wallet}</p>
       )}
 
       {error && (
-        <div className="mb-4 p-3 bg-red-900 text-red-100 rounded-lg">
-          {error}
-        </div>
+        <div className="mb-4 p-3 bg-red-800 text-red-100 rounded">{error}</div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* NFT Details Form */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Formulario NFT */}
         <div className="bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">📝 NFT Details</h2>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block mb-1">Title *</label>
-              <input
-                type="text"
-                name="titulo"
-                value={nftData.titulo}
-                onChange={handleInputChange}
-                className="w-full bg-gray-700 p-2 rounded border border-gray-600"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1">Description *</label>
-              <textarea
-                name="description"
-                value={nftData.description}
-                onChange={handleInputChange}
-                className="w-full bg-gray-700 p-2 rounded border border-gray-600 h-24"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1">Name</label>
-              <input
-                type="text"
-                name="nombre"
-                value={nftData.nombre}
-                onChange={handleInputChange}
-                className="w-full bg-gray-700 p-2 rounded border border-gray-600"
-              />
-            </div>
-
-            <div>
-              <label className="block mb-1">Date</label>
-              <input
-                type="date"
-                name="fecha"
-                value={nftData.fecha}
-                onChange={handleInputChange}
-                className="w-full bg-gray-700 p-2 rounded border border-gray-600"
-              />
-            </div>
-          </div>
+          <label className="block mb-2">Título *</label>
+          <input
+            name="titulo"
+            value={nftData.titulo}
+            onChange={handleInputChange}
+            className="w-full bg-gray-700 p-2 rounded mb-4"
+            required
+          />
+          <label className="block mb-2">Descripción *</label>
+          <textarea
+            name="description"
+            value={nftData.description}
+            onChange={handleInputChange}
+            className="w-full bg-gray-700 p-2 rounded mb-4"
+            required
+          />
+          <label className="block mb-2">Nombre</label>
+          <input
+            name="nombre"
+            value={nftData.nombre}
+            onChange={handleInputChange}
+            className="w-full bg-gray-700 p-2 rounded mb-4"
+          />
+          <label className="block mb-2">Fecha</label>
+          <input
+            type="date"
+            name="fecha"
+            value={nftData.fecha}
+            onChange={handleInputChange}
+            className="w-full bg-gray-700 p-2 rounded"
+          />
         </div>
 
-        {/* Image Upload */}
+        {/* Imagen */}
         <div className="bg-gray-800 p-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4">🖼️ NFT Image</h2>
-          
+          <label className="block mb-2">Imagen *</label>
           {nftData.imagePreview ? (
-            <img 
-              src={nftData.imagePreview} 
-              alt="Preview" 
-              className="mb-4 max-h-64 rounded-lg mx-auto"
+            <img
+              src={nftData.imagePreview}
+              alt="Preview"
+              className="mb-4 rounded-lg max-h-64 mx-auto"
             />
           ) : (
-            <div className="h-64 bg-gray-700 rounded-lg flex items-center justify-center mb-4">
-              <p className="text-gray-400">Image Preview</p>
+            <div className="h-64 bg-gray-700 flex items-center justify-center text-gray-400 rounded mb-4">
+              Imagen no seleccionada
             </div>
           )}
-
           <input
             type="file"
             ref={fileInputRef}
@@ -324,22 +191,22 @@ const Mint = () => {
             onClick={() => fileInputRef.current.click()}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded w-full"
           >
-            {nftData.imagePreview ? "Change Image" : "Select Image"}
+            {nftData.imagePreview ? "Cambiar imagen" : "Seleccionar imagen"}
           </button>
         </div>
       </div>
 
-      {contractAddress && (
+      {wallet && (
         <button
           onClick={mintNFT}
           disabled={isMinting}
-          className={`px-6 py-3 rounded text-white ${
-            isMinting 
-              ? "bg-gray-600 cursor-not-allowed" 
+          className={`mt-6 px-6 py-3 rounded text-white ${
+            isMinting
+              ? "bg-gray-600 cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700"
           }`}
         >
-          {isMinting ? "⏳ Minting NFT..." : "🛠️ Mint NFT"}
+          {isMinting ? "⏳ Minteando..." : "🛠️ Crear NFT"}
         </button>
       )}
     </div>
