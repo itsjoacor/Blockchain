@@ -4,7 +4,8 @@ import OldPage from "./pages/OldPage";
 import Instructions from "./pages/Instructions";
 import FetchAndVal from "./pages/FetchAndVal";
 import Mint from "./pages/Mint";
-import Minting from "./pages/minting";
+import Minting from "./pages/Minting";
+import FetchAndVal2 from "./pages/FetchAndVal2";
 
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/fetchAndVal" element={<FetchAndVal />} />
         <Route path="/mint" element={<Mint />} />
         <Route path="/minting" element={<Minting />} />
+        <Route path="/fetchAndVal2" element={<FetchAndVal2 />} />
 
       </Routes>
     </BrowserRouter>
