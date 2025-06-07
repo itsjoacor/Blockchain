@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
 
-const CONTRACT_ADDRESS = "0xa37bA077a062c60A018993694Acbd4759207DcEE";
+const CONTRACT_ADDRESS = "0x2E14CD8D9ecfF34c941c69acE8FD9c17020Ef6Cb";
 
 const ABI = [
   // Solo dejamos lo que usás
@@ -125,7 +125,7 @@ const Mint = () => {
       ) : (
         <p className="mb-4 text-green-400">Wallet conectada: {wallet}</p>
       )}
-
+      <p className="mb-4 text-green-400">Contrato: {CONTRACT_ADDRESS}</p>
       {error && (
         <div className="mb-4 p-3 bg-red-800 text-red-100 rounded">{error}</div>
       )}
@@ -200,11 +200,10 @@ const Mint = () => {
         <button
           onClick={mintNFT}
           disabled={isMinting}
-          className={`mt-6 px-6 py-3 rounded text-white ${
-            isMinting
+          className={`mt-6 px-6 py-3 rounded text-white ${isMinting
               ? "bg-gray-600 cursor-not-allowed"
               : "bg-green-600 hover:bg-green-700"
-          }`}
+            }`}
         >
           {isMinting ? "⏳ Minteando..." : "🛠️ Crear NFT"}
         </button>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 
-const NFT_CONTRACT_ADDRESS = "0xa37bA077a062c60A018993694Acbd4759207DcEE";
+const NFT_CONTRACT_ADDRESS = "0x2E14CD8D9ecfF34c941c69acE8FD9c17020Ef6Cb";
 
 const NFT_ABI = [
   {
@@ -11,68 +11,43 @@ const NFT_ABI = [
       { internalType: "string", name: "descripcion", type: "string" },
       { internalType: "string", name: "nombre", type: "string" },
       { internalType: "string", name: "fecha", type: "string" },
-      { internalType: "string", name: "imageUrl", type: "string" },
+      { internalType: "string", name: "imageUrl", type: "string" }
     ],
     name: "mintConMetadata",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
-    name: "uri",
-    outputs: [{ internalType: "string", name: "", type: "string" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "account", type: "address" },
-      { internalType: "uint256", name: "id", type: "uint256" },
-    ],
-    name: "balanceOf",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      { internalType: "address", name: "account", type: "address" },
-      { internalType: "uint256", name: "id", type: "uint256" },
-    ],
     name: "getMetadata",
     outputs: [
       { internalType: "string", name: "titulo", type: "string" },
       { internalType: "string", name: "descripcion", type: "string" },
       { internalType: "string", name: "nombre", type: "string" },
       { internalType: "string", name: "fecha", type: "string" },
-      { internalType: "string", name: "imageUrl", type: "string" },
+      { internalType: "string", name: "imageUrl", type: "string" }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
-    anonymous: false,
     inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "operator",
-        type: "address",
-      },
-      { indexed: true, internalType: "address", name: "from", type: "address" },
-      { indexed: true, internalType: "address", name: "to", type: "address" },
-      { indexed: false, internalType: "uint256", name: "id", type: "uint256" },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "value",
-        type: "uint256",
-      },
+      { internalType: "address", name: "account", type: "address" },
+      { internalType: "uint256", name: "id", type: "uint256" }
     ],
-    name: "TransferSingle",
-    type: "event",
+    name: "balanceOf",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
   },
+  {
+    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    name: "uri",
+    outputs: [{ internalType: "string", name: "", type: "string" }],
+    stateMutability: "view",
+    type: "function"
+  }
 ];
 
 // Maximum token ID to check (adjust as needed)
@@ -107,130 +82,51 @@ export default function NFTGallery() {
 
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const contract = new ethers.Contract(
-        NFT_CONTRACT_ADDRESS,
-        NFT_ABI,
-        provider
-      );
+      const contract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, provider);
 
       const ownedNFTs = [];
 
       // Check each token ID up to MAX_TOKEN_ID
       for (let tokenId = 0; tokenId < MAX_TOKEN_ID; tokenId++) {
         try {
-          // Check balance for this token ID
           const balance = await contract.balanceOf(wallet, tokenId);
 
           if (balance.gt(0)) {
-            // Get token URI
-            let tokenUri = "";
-            try {
-              tokenUri = await contract.uri(tokenId);
-              // Handle OpenSea-style {id} replacement
-              tokenUri = tokenUri.replace(
-                "{id}",
-                ethers.utils
-                  .hexZeroPad(ethers.utils.hexlify(tokenId), 64)
-                  .slice(2)
-              );
-            } catch (e) {
-              console.log(`No URI for token ${tokenId}`);
-            }
-
-            // Get metadata from contract
-            let metadata = {
-              titulo: "",
-              descripcion: "",
-              nombre: "",
-              fecha: "",
-              imageUrl: "",
-            };
-
+            // Safely get metadata with fallback values
+            let metadata;
             try {
               const [titulo, descripcion, nombre, fecha, imageUrl] =
                 await contract.getMetadata(tokenId);
-
               metadata = {
-                titulo,
-                descripcion,
-                nombre,
-                fecha,
-                imageUrl,
-              };
+                titulo: titulo || `NFT #${tokenId}`,
+                descripcion: descripcion || "No description available",
+                nombre: nombre || "Unnamed",
+                fecha: fecha || "Unknown date",
+                imageUrl: imageUrl || "https://placehold.co/300x300?text=Sin+Imagen"
 
-              metadata = {
-                titulo: contractMetadata.titulo,
-                descripcion: contractMetadata.descripcion,
-                nombre: contractMetadata.nombre,
-                fecha: contractMetadata.fecha,
-                imageUrl: contractMetadata.imageUrl,
               };
             } catch (e) {
-              console.log(
-                `Couldn't get contract metadata for token ${tokenId}`
-              );
+              console.error(`Error fetching metadata for token ${tokenId}:`, e);
+              metadata = {
+                titulo: `NFT #${tokenId}`,
+                descripcion: "Metadata unavailable",
+                nombre: "Unnamed",
+                fecha: "Unknown date",
+                imageUrl: imageUrl || "https://placehold.co/300x300?text=Sin+Imagen"
+
+              };
             }
-
-            // Get additional metadata from URI if it exists
-            let externalMetadata = {};
-            if (tokenUri) {
-              try {
-                const res = await fetch(tokenUri);
-                externalMetadata = await res.json();
-              } catch (e) {
-                console.log(
-                  `Couldn't fetch external metadata for token ${tokenId}`
-                );
-              }
-            }
-
-            // Get mint event data
-            const getMintEvent = async (contract, provider, tokenId) => {
-              try {
-                const filter = contract.filters.TransferSingle(); // sin filtros
-                const events = await contract.queryFilter(filter, 0, "latest");
-
-                for (const e of events) {
-                  if (
-                    e.args.id.toString() === tokenId.toString() &&
-                    e.args.from === ethers.constants.AddressZero
-                  ) {
-                    const block = await provider.getBlock(e.blockNumber);
-                    return {
-                      minter: e.args.to,
-                      date: new Date(block.timestamp * 1000).toLocaleString(),
-                    };
-                  }
-                }
-
-                return null;
-              } catch (err) {
-                console.error("Error fetching mint event:", err);
-                return null;
-              }
-            };
 
             ownedNFTs.push({
               tokenId,
               balance: balance.toString(),
-              title:
-                metadata.titulo || externalMetadata.name || `NFT #${tokenId}`,
-              description:
-                metadata.descripcion || externalMetadata.description || "",
-              name: metadata.nombre || externalMetadata.name || "",
-              date: metadata.fecha || "",
-              imageUrl:
-                metadata.imageUrl ||
-                externalMetadata.image ||
-                "https://via.placeholder.com/300",
-              mintedBy: mintEvent?.minter || "Unknown",
-              mintDate: mintEvent?.date || "Unknown",
-              tokenUri,
+              ...metadata,
+              mintedBy: wallet,
+              mintDate: new Date().toLocaleString()
             });
           }
         } catch (error) {
-          console.log(`Token ${tokenId} not found or error:`, error);
-          continue;
+          console.log(`Token ${tokenId} error:`, error);
         }
       }
 
@@ -339,24 +235,28 @@ export default function NFTGallery() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {nfts.map((nft) => (
-                    <div
-                      key={nft.tokenId}
-                      className="bg-white rounded-lg overflow-hidden shadow-lg"
-                    >
+                    <div key={nft.tokenId} className="bg-white rounded-lg overflow-hidden shadow-lg">
                       <img
-                        src={nft.imageUrl}
-                        alt={nft.title}
+                        src={nft.imageUrl || "https://placehold.co/600x400?text=NFT+Image"}
+                        alt={nft.titulo || `NFT #${nft.tokenId}`}
                         className="w-full h-48 object-cover"
                         onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/300";
+                          e.target.src = "https://placehold.co/600x400?text=Image+Error";
                         }}
                       />
                       <div className="p-4">
                         <h3 className="font-bold text-xl text-gray-800 mb-2">
-                          {nft.title}
+                          {nft.titulo || `NFT #${nft.tokenId}`}
                         </h3>
                         <p className="text-gray-600 text-sm mb-2">
-                          {nft.description}
+                          <span className="font-semibold">Descripción:</span> {nft.descripcion || "No disponible"}
+                        </p>
+                        {/* Add Nombre field display */}
+                        <p className="text-gray-600 text-sm mb-2">
+                          <span className="font-semibold">Nombre:</span> {nft.nombre || "No disponible"}
+                        </p>
+                        <p className="text-gray-600 text-sm mb-2">
+                          <span className="font-semibold">Fecha:</span> {nft.fecha || "No disponible"}
                         </p>
 
                         <div className="mt-4 pt-4 border-t border-gray-200">
@@ -368,20 +268,23 @@ export default function NFTGallery() {
                             <span>Balance:</span>
                             <span className="text-gray-700">{nft.balance}</span>
                           </div>
+                          {nft.mintedBy && (
+                            <div className="flex justify-between text-sm text-gray-500">
+                              <span>Minted By:</span>
+                              <span className="text-gray-700">
+                                {nft.mintedBy.substring(0, 6)}...
+                                {nft.mintedBy.substring(nft.mintedBy.length - 4)}
+                              </span>
+                            </div>
+                          )}
                           <div className="flex justify-between text-sm text-gray-500">
-                            <span>Minted By:</span>
+                            <span className="flex justify-between text-sm text-gray-500">Current Owner:</span>
                             <span className="text-gray-700">
-                              {nft.mintedBy.substring(0, 6)}...
-                              {nft.mintedBy.substring(nft.mintedBy.length - 4)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm text-gray-500">
-                            <span>Mint Date:</span>
-                            <span className="text-gray-700">
-                              {nft.mintDate}
+                              {wallet.substring(0, 6)}...{wallet.substring(wallet.length - 4)}
                             </span>
                           </div>
                         </div>
+
                       </div>
                     </div>
                   ))}

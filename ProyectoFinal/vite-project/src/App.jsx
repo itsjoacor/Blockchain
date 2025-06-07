@@ -4,9 +4,11 @@ import OldPage from "./pages/OldPage";
 import Instructions from "./pages/Instructions";
 import FetchAndVal from "./pages/FetchAndVal";
 import Mint from "./pages/Mint";
+import Mint2 from "./pages/Mint2";
 import Minting from "./pages/Minting";
 import FetchAndVal2 from "./pages/FetchAndVal2";
 import MyNFT from "./pages/MyNFT";
+import NFTGallery from "./pages/PublicNFTs"
 
 
 function App() {
@@ -19,9 +21,11 @@ function App() {
         <Route path="/oldP" element={<OldPage />} />
         <Route path="/fetchAndVal" element={<FetchAndVal />} />
         <Route path="/mint" element={<Mint />} />
+        <Route path="/mint2" element={<Mint2 />} />
         <Route path="/minting" element={<Minting />} />
         <Route path="/fetchAndVal2" element={<FetchAndVal2 />} />
         <Route path="/mynft" element={<MyNFT />} />
+        <Route path="/publicnfts" element={<NFTGallery />} />
 
       </Routes>
     </BrowserRouter>
