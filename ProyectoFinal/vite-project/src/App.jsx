@@ -6,6 +6,7 @@ import FetchAndVal from "./pages/FetchAndVal";
 import Mint from "./pages/Mint";
 import Minting from "./pages/Minting";
 import FetchAndVal2 from "./pages/FetchAndVal2";
+import MyNFT from "./pages/MyNFT";
 
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/mint" element={<Mint />} />
         <Route path="/minting" element={<Minting />} />
         <Route path="/fetchAndVal2" element={<FetchAndVal2 />} />
+        <Route path="/mynft" element={<MyNFT />} />
 
       </Routes>
     </BrowserRouter>
