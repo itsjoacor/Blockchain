@@ -4,7 +4,7 @@ export default function Instructions() {
   const navigate = useNavigate();
 
   const handleStart = () => {
-    navigate("/validacion"); // reemplazá por la ruta real
+    navigate("/fetchAndVal"); // reemplazá por la ruta real
   };
 
   return (
@@ -19,7 +19,7 @@ export default function Instructions() {
 
       <ul className="list-disc text-left text-gray-200 mb-6 space-y-2">
         <li>Conectá tu wallet usando MetaMask.</li>
-        <li>Verificá que tenés los NFTs necesarios para continuar.</li>
+        <li>Se verifica que tengo los NFTs necesarios para continuar.</li>
         <li>Completá el formulario solo si se valida correctamente.</li>
         <li>El NFT será enviado automáticamente a Dani y Pablo.</li>
       </ul>
