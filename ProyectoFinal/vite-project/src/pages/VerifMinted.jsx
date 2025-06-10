@@ -83,7 +83,27 @@ export default function MintedByWallet() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white p-6">
+    <div className="min-h-screen bg-blue-950 text-white p-6 relative">
+      {/* Botones arriba a la derecha */}
+      <div className="flex gap-2 absolute right-6 top-6">
+        <a
+          href={`https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm"
+        >
+          🔍 Ver contrato en Etherscan
+        </a>
+        <a
+          href={`https://github.com/itsjoacor/nft-image/blob/main/README.md`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+        >
+          🧩 Ver contrato en Github
+        </a>
+      </div>
+
       <h1 className="text-3xl font-bold mb-4">🎨 NFTs Minteados por tu Wallet</h1>
 
       {!wallet ? (
@@ -107,30 +127,38 @@ export default function MintedByWallet() {
 
       {loading && <p className="mt-4">⏳ Cargando NFTs...</p>}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-        {mintedNFTs.map((nft) => (
-          <div
-            key={nft.tokenId}
-            className="bg-blue-900 rounded-lg shadow p-4 border border-blue-800"
-          >
-            <img
-              src={nft.imageUrl}
-              alt={nft.titulo || `NFT ${nft.tokenId}`}
-              className="w-full h-48 object-cover mb-4 rounded"
-              onError={(e) => {
-                e.target.src = "https://placehold.co/300x300?text=Error+Imagen";
-              }}
-            />
-            <h2 className="text-xl font-bold mb-2">{nft.titulo || `NFT ${nft.tokenId}`}</h2>
-            <p><strong>Descripción:</strong> {nft.descripcion}</p>
-            <p><strong>Nombre:</strong> {nft.nombre}</p>
-            <p><strong>Fecha:</strong> {nft.fecha}</p>
-            <p><strong>Token ID:</strong> {nft.tokenId}</p>
-            <p><strong>Minted From:</strong> {nft.mintedFrom}</p>
-            <p><strong>Minted To:</strong> {nft.mintedTo}</p>
-            <p><strong>Operator:</strong> {nft.operator}</p>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+        {mintedNFTs.map((nft) => {
+          const isAfterJune9 =
+            new Date(nft.fecha).getTime() >= new Date("2025-06-09").getTime();
+          const cardColor = isAfterJune9
+            ? "bg-green-900 border-green-700"
+            : "bg-red-900 border-red-700";
+
+          return (
+            <div
+              key={nft.tokenId}
+              className={`${cardColor} rounded-lg shadow p-3 border text-sm`}
+            >
+              <img
+                src={nft.imageUrl}
+                alt={nft.titulo || `NFT ${nft.tokenId}`}
+                className="w-full max-h-[300px] object-contain mb-3 rounded bg-white p-2"
+                onError={(e) => {
+                  e.target.src = "https://placehold.co/300x300?text=Error+Imagen";
+                }}
+              />
+              <h2 className="text-lg font-bold mb-1">{nft.titulo || `NFT ${nft.tokenId}`}</h2>
+              <p><strong>📄 Descripción:</strong> {nft.descripcion}</p>
+              <p><strong>🧾 Nombre:</strong> {nft.nombre}</p>
+              <p><strong>📅 Fecha:</strong> {nft.fecha}</p>
+              <p><strong>🆔 Token ID:</strong> {nft.tokenId}</p>
+              <p><strong>↩️ Minted From:</strong> {nft.mintedFrom}</p>
+              <p><strong>➡️ Minted To:</strong> {nft.mintedTo}</p>
+              <p><strong>👤 Operator:</strong> {nft.operator}</p>
+            </div>
+          );
+        })}
       </div>
 
       {!loading && mintedNFTs.length === 0 && wallet && (

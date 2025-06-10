@@ -16,7 +16,6 @@ function App() {
         <Route path="/oldP" element={<OldPage />} />
         <Route path="/fetchAndVal" element={<FetchAndVal />} />
         <Route path="/mint" element={<Mint />} />
-
         <Route path="/minted?" element={<VerifyMinted />} />
 
       </Routes>
