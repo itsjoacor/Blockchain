@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ethers } from "ethers";
+import { useNavigate } from "react-router-dom";
 
 const CONTRACT_ADDRESS = "0x2E14CD8D9ecfF34c941c69acE8FD9c17020Ef6Cb";
 const ABI = [
@@ -9,8 +10,11 @@ const ABI = [
 
 export default function MintedByWallet() {
   const [wallet, setWallet] = useState(null);
+  const [attemptedLoad, setAttemptedLoad] = useState(false);
+
   const [mintedNFTs, setMintedNFTs] = useState([]);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const connectWallet = async () => {
     if (!window.ethereum) return alert("Instala MetaMask primero");
@@ -72,7 +76,9 @@ export default function MintedByWallet() {
       console.error("Error al obtener NFTs:", err);
     } finally {
       setLoading(false);
+      setAttemptedLoad(true); // se ejecutó la carga
     }
+
   };
 
   useEffect(() => {
@@ -102,41 +108,63 @@ export default function MintedByWallet() {
       {loading && <p className="mt-4 text-gray-300">⏳ Cargando NFTs...</p>}
 
       {mintedNFTs.length > 0 && (
-        <div className="overflow-x-auto mt-6">
-          <table className="min-w-full border border-gray-700 text-sm text-white">
-            <thead className="bg-indigo-800">
-              <tr>
-                <th className="border px-3 py-2">Token ID</th>
-                <th className="border px-3 py-2">Título</th>
-                <th className="border px-3 py-2">Descripción</th>
-                <th className="border px-3 py-2">Nombre</th>
-                <th className="border px-3 py-2">Fecha</th>
-                <th className="border px-3 py-2">Minted From</th>
-                <th className="border px-3 py-2">Minted To</th>
-                <th className="border px-3 py-2">Operator</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mintedNFTs.map((nft) => (
-                <tr key={nft.tokenId} className="bg-gray-900 hover:bg-gray-800">
-                  <td className="border px-3 py-2">{nft.tokenId}</td>
-                  <td className="border px-3 py-2">{nft.titulo}</td>
-                  <td className="border px-3 py-2">{nft.descripcion}</td>
-                  <td className="border px-3 py-2">{nft.nombre}</td>
-                  <td className="border px-3 py-2">{nft.fecha}</td>
-                  <td className="border px-3 py-2">{nft.mintedFrom}</td>
-                  <td className="border px-3 py-2">{nft.mintedTo}</td>
-                  <td className="border px-3 py-2">{nft.operator}</td>
+        <>
+          <div className="overflow-x-auto mt-6">
+            <table className="min-w-full border border-gray-700 text-sm text-white">
+              <thead className="bg-indigo-800">
+                <tr>
+                  <th className="border px-3 py-2">Token ID</th>
+                  <th className="border px-3 py-2">Título</th>
+                  <th className="border px-3 py-2">Descripción</th>
+                  <th className="border px-3 py-2">Nombre</th>
+                  <th className="border px-3 py-2">Fecha</th>
+                  <th className="border px-3 py-2">Minted From</th>
+                  <th className="border px-3 py-2">Minted To</th>
+                  <th className="border px-3 py-2">Operator</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {mintedNFTs.map((nft) => (
+                  <tr key={nft.tokenId} className="bg-gray-900 hover:bg-gray-800">
+                    <td className="border px-3 py-2">{nft.tokenId}</td>
+                    <td className="border px-3 py-2">{nft.titulo}</td>
+                    <td className="border px-3 py-2">{nft.descripcion}</td>
+                    <td className="border px-3 py-2">{nft.nombre}</td>
+                    <td className="border px-3 py-2">{nft.fecha}</td>
+                    <td className="border px-3 py-2">{nft.mintedFrom}</td>
+                    <td className="border px-3 py-2">{nft.mintedTo}</td>
+                    <td className="border px-3 py-2">{nft.operator}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={() => navigate("/mint2")}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded"
+            >
+              ✨ Mintear
+            </button>
+          </div>
+        </>
       )}
 
       {!loading && mintedNFTs.length === 0 && wallet && (
         <p className="mt-6 text-gray-400">No se encontraron NFTs minteados por esta wallet.</p>
       )}
+      {attemptedLoad && !loading && (
+        <div className="flex justify-center mt-6">
+          <button
+            onClick={() => navigate("/mint2")}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded"
+          >
+            ✨ Mintear
+          </button>
+        </div>
+      )}
+
     </div>
   );
 }

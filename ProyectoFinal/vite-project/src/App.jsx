@@ -23,14 +23,14 @@ function App() {
         <Route path="/oldP" element={<OldPage />} />
         <Route path="/fetchAndVal" element={<FetchAndVal />} />
         <Route path="/mint" element={<Mint />} />
-        <Route path="/minted?" element={<VerifyMinted />} />
+        <Route path="/isMinted" element={<VerifyMinted />} />
 
         <Route path="/2" element={<Home2 />} />
         <Route path="/instructions2" element={<Instructions2 />} />
         <Route path="/oldP2" element={<OldPage2 />} />
         <Route path="/fetchAndVal2" element={<FetchAndVal2 />} />
         <Route path="/mint2" element={<Mint2 />} />
-        <Route path="/minted?2" element={<VerifyMinted2 />} />
+        <Route path="/isMinted2" element={<VerifyMinted2 />} />
 
       </Routes>
     </BrowserRouter>

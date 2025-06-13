@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 
-const CONTRACT_ADDRESS = "0x2E14CD8D9ecfF34c941c69acE8FD9c17020Ef6Cb";
+const CONTRACT_ADDRESS = "0x020a378a2eb76772A07a841A22f7526bcA781147";
 const ABI = [
   "event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)",
   "function getMetadata(uint256 tokenId) view returns (string titulo, string descripcion, string nombre, string fecha, string imageUrl)"
@@ -40,32 +40,40 @@ export default function NFTsMinteadosPorMiWallet() {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
 
-      const filter = contract.filters.TransferSingle(null, ethers.constants.AddressZero, wallet);
-      const events = await contract.queryFilter(filter, 0, "latest");
+      // Traer todos los eventos donde `to` es la wallet conectada
+      const transferEvents = await contract.queryFilter(
+        contract.filters.TransferSingle(null, null, wallet),
+        0,
+        "latest"
+      );
 
-      const seen = new Set();
-      const results = [];
+      const balances = new Map();
 
-      for (const event of events) {
+      for (const event of transferEvents) {
         const tokenId = event.args.id.toNumber();
-        if (seen.has(tokenId)) continue;
-        seen.add(tokenId);
+        const value = event.args.value.toNumber();
 
-        try {
-          const metadata = await contract.getMetadata(tokenId);
-          results.push({
-            tokenId,
-            titulo: metadata.titulo,
-            descripcion: metadata.descripcion,
-            nombre: metadata.nombre,
-            fecha: metadata.fecha,
-            imageUrl: resolveImageUrl(metadata.imageUrl),
-            mintedFrom: event.args.from,
-            mintedTo: event.args.to,
-            operator: event.args.operator
-          });
-        } catch (e) {
-          console.warn(`No se pudo obtener metadata para el token ${tokenId}`);
+        // Sumar balance localmente
+        balances.set(tokenId, (balances.get(tokenId) || 0) + value);
+      }
+
+      // Filtrar los que realmente tiene (balance > 0)
+      const results = [];
+      for (const [tokenId, balance] of balances.entries()) {
+        if (balance > 0) {
+          try {
+            const metadata = await contract.getMetadata(tokenId);
+            results.push({
+              tokenId,
+              titulo: metadata.titulo,
+              descripcion: metadata.descripcion,
+              nombre: metadata.nombre,
+              fecha: metadata.fecha,
+              imageUrl: resolveImageUrl(metadata.imageUrl),
+            });
+          } catch (e) {
+            console.warn(`No se pudo obtener metadata para el token ${tokenId}`);
+          }
         }
       }
 
@@ -76,6 +84,7 @@ export default function NFTsMinteadosPorMiWallet() {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     if (window.ethereum?.selectedAddress) {
@@ -114,9 +123,6 @@ export default function NFTsMinteadosPorMiWallet() {
                 <th className="px-4 py-2 border">Nombre</th>
                 <th className="px-4 py-2 border">Fecha</th>
                 <th className="px-4 py-2 border">Imagen</th>
-                <th className="px-4 py-2 border">Minteado desde</th>
-                <th className="px-4 py-2 border">Minteado hacia</th>
-                <th className="px-4 py-2 border">Operator</th>
               </tr>
             </thead>
             <tbody>
@@ -137,9 +143,6 @@ export default function NFTsMinteadosPorMiWallet() {
                       }}
                     />
                   </td>
-                  <td className="px-4 py-2 border">{nft.mintedFrom}</td>
-                  <td className="px-4 py-2 border">{nft.mintedTo}</td>
-                  <td className="px-4 py-2 border">{nft.operator}</td>
                 </tr>
               ))}
             </tbody>
