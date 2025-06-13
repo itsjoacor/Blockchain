@@ -5,7 +5,7 @@ import { ethers } from "ethers";
 const DESTINO = "0xb3e143114D4de641A66C7df96B358E7944090628";
 const CONTRACT_ADDRESS_F1 = "0x2E14CD8D9ecfF34c941c69acE8FD9c17020Ef6Cb";
 const CONTRACT_ADDRESS_F2 = "0x020a378a2eb76772A07a841A22f7526bcA781147";
-const FIXED_IMAGE_URL = "https://raw.githubusercontent.com/itsjoacor/nft-image/main/JRP.png";
+const FIXED_IMAGE_URL = "https://raw.githubusercontent.com/itsjoacor/Contract2/main/JRP.png";
 
 const ABI = [
   {
