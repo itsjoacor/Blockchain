@@ -4,35 +4,35 @@ import { useNavigate } from "react-router-dom";
 const Home = () => {
   const navigate = useNavigate();
 
-
   const handleInstructions = () => {
-    navigate("/instructions"); // Ruta hacia la página de instrucciones
+    navigate("/instructions");
   };
 
   const handleFetchAndVal = () => {
-    navigate("/fetchAndVal")
-  }
+    navigate("/fetchAndVal");
+  };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center px-4 bg-gray-900 text-white">
-      <h1 className="text-5xl md:text-7xl font-bold tracking-widest text-blue-400 drop-shadow-lg animate-pulse">
+    <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-gradient-to-br from-pink-100 via-indigo-100 to-cyan-100 text-gray-800 transition-all">
+      <h1 className="text-4xl md:text-6xl font-extrabold tracking-widest text-indigo-600 drop-shadow-md animate-pulse mb-4">
         🚀 Blockchain Project
       </h1>
-      <p className="mt-6 text-xl text-gray-300 max-w-2xl">
-        ...Una experiencia descentralizada, segura y del futuro
-        Para poder validar la promocion de tus alumnos..
+
+      <p className="text-lg md:text-xl text-gray-700 max-w-2xl mb-12">
+        Una experiencia descentralizada, segura y futurista 🌐<br />
+        Validá la promoción de tus alumnos con un solo clic.
       </p>
 
-      <div className="mt-12 border border-blue-500 rounded-xl px-6 py-6 shadow-lg hover:scale-105 transition-transform space-y-4">
+      <div className="bg-white/70 border border-indigo-200 backdrop-blur-lg rounded-xl px-8 py-6 shadow-xl space-y-5 transition-all hover:scale-105">
         <button
           onClick={handleFetchAndVal}
-          className="block w-full bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded"
+          className="block w-full bg-gradient-to-r from-cyan-400 to-indigo-400 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:from-cyan-500 hover:to-indigo-500 transition-colors"
         >
-          🚀 Comenzar!
+          🚀 Comenzar
         </button>
         <button
           onClick={handleInstructions}
-          className="block w-full bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded"
+          className="block w-full bg-pink-300 hover:bg-pink-400 text-white font-semibold py-3 px-6 rounded-lg shadow-md transition-colors"
         >
           ❓ Tengo dudas
         </button>

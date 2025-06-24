@@ -110,81 +110,85 @@ export default function Mint2() {
       } else {
         setError("❌ Error al mintear: " + (err.reason || err.message));
       }
+    } finally {
+      setIsMinting(false);
     }
-
-
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <h1 className="text-4xl font-bold text-center mb-6">🎨 Crear NFT Condicional</h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-purple-100 text-gray-800 p-6">
+      <h1 className="text-4xl font-extrabold text-center mb-8 text-indigo-600 drop-shadow-md">
+        🛠️ Crear NFT condicional
+      </h1>
 
-      <div className="bg-gray-800 p-4 rounded-lg mb-6 max-w-3xl mx-auto text-sm">
-        {wallet ? (
-          <>
-            <p className="text-green-400 mb-2">💳 Wallet conectada: <span className="text-white">{wallet}</span></p>
-            <div className="mb-3">
-              <p className="text-blue-300 font-semibold">📜 Contratos disponibles para verificación:</p>
-              <div className="flex items-center justify-between bg-gray-700 px-3 py-2 rounded mt-2">
-                <span className="truncate text-sm">Contrato Flujo 1: {CONTRACT_ADDRESS_F1}</span>
-                <button className="bg-indigo-600 hover:bg-indigo-700 px-2 py-1 text-xs rounded" onClick={() => copyToClipboard(CONTRACT_ADDRESS_F1)}>
-                  📋 Copiar
-                </button>
-              </div>
-              <div className="flex items-center justify-between bg-gray-700 px-3 py-2 rounded mt-2">
-                <span className="truncate text-sm">Contrato Flujo 2: {CONTRACT_ADDRESS_F2}</span>
-                <button className="bg-indigo-600 hover:bg-indigo-700 px-2 py-1 text-xs rounded" onClick={() => copyToClipboard(CONTRACT_ADDRESS_F2)}>
-                  📋 Copiar
-                </button>
-              </div>
-              {copied && (
-                <div className="text-green-400 mt-2 text-sm">
-                  ✅ Dirección copiada: <span className="text-white">{copied}</span>
-                </div>
-              )}
-            </div>
-          </>
+      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md p-6">
+        {!wallet ? (
+          <div className="flex justify-center">
+            <button onClick={connectWallet} className="bg-indigo-500 hover:bg-indigo-600 px-6 py-3 rounded-xl text-white font-semibold shadow">
+              🔌 Conectar Wallet
+            </button>
+          </div>
         ) : (
-          <button onClick={connectWallet} className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white mb-2">
-            🔌 Conectar Wallet
-          </button>
+          <div className="text-sm space-y-4">
+            <p className="text-green-600 font-medium">💳 Wallet conectada: <span className="text-gray-700">{wallet}</span></p>
+            <div className="space-y-2">
+              <p className="text-indigo-500 font-semibold">📜 Contratos disponibles para verificación:</p>
+              {[CONTRACT_ADDRESS_F1, CONTRACT_ADDRESS_F2].map((addr, i) => (
+                <div key={i} className="flex items-center justify-between bg-indigo-100 px-4 py-2 rounded-lg">
+                  <span className="text-sm truncate">{`Contrato Flujo ${i + 1}: ${addr}`}</span>
+                  <button onClick={() => copyToClipboard(addr)} className="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-3 py-1 rounded">
+                    📋 Copiar
+                  </button>
+                </div>
+              ))}
+              {copied && <p className="text-green-500 text-sm mt-1">✅ Copiado: {copied}</p>}
+            </div>
+            <p className="text-sm text-gray-600 mt-2">📦 Contrato de minteo: <span className="text-indigo-500 font-medium">{CONTRACT_ADDRESS_F2}</span></p>
+            <p className="text-sm text-gray-600">👤 Mint a: <span className="text-indigo-500 font-medium">{DESTINO}</span></p>
+          </div>
         )}
-        <p className="mb-1">📦 Contrato de minteo: <span className="text-blue-400">{CONTRACT_ADDRESS_F2}</span></p>
-        <p className="mb-1">👤 Mint a: <span className="text-blue-300">{DESTINO}</span></p>
       </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-800 text-red-100 rounded max-w-2xl mx-auto">{error}</div>
-      )}
+      {error && <div className="mt-6 max-w-xl mx-auto bg-red-100 border border-red-300 text-red-800 rounded p-4 text-sm">{error}</div>}
 
-      <div className="bg-gray-800 p-6 rounded-lg mb-6 max-w-xl mx-auto">
-        <label className="block mb-2">Título *</label>
-        <input name="titulo" value={nftData.titulo} onChange={handleInputChange} className="w-full bg-gray-700 p-2 rounded mb-4" />
+      <div className="mt-8 max-w-xl mx-auto bg-white rounded-xl shadow-md p-6 space-y-4">
+        <div>
+          <label className="block text-sm font-semibold mb-1">Título *</label>
+          <input name="titulo" value={nftData.titulo} onChange={handleInputChange} className="w-full border border-gray-300 rounded p-2 text-sm" />
+        </div>
 
-        <label className="block mb-2">Descripción *</label>
-        <textarea name="description" value={nftData.description} onChange={handleInputChange} className="w-full bg-gray-700 p-2 rounded mb-4" />
+        <div>
+          <label className="block text-sm font-semibold mb-1">Descripción *</label>
+          <textarea name="description" value={nftData.description} onChange={handleInputChange} className="w-full border border-gray-300 rounded p-2 text-sm" />
+        </div>
 
-        <label className="block mb-2">Nombre</label>
-        <input name="nombre" value={nftData.nombre} onChange={handleInputChange} className="w-full bg-gray-700 p-2 rounded mb-4" />
+        <div>
+          <label className="block text-sm font-semibold mb-1">Nombre</label>
+          <input name="nombre" value={nftData.nombre} onChange={handleInputChange} className="w-full border border-gray-300 rounded p-2 text-sm" />
+        </div>
 
-        <label className="block mb-2">Fecha</label>
-        <input type="date" name="fecha" value={nftData.fecha} onChange={handleInputChange} className="w-full bg-gray-700 p-2 rounded mb-4" />
+        <div>
+          <label className="block text-sm font-semibold mb-1">Fecha</label>
+          <input type="date" name="fecha" value={nftData.fecha} onChange={handleInputChange} className="w-full border border-gray-300 rounded p-2 text-sm" />
+        </div>
 
-        <label className="block mb-2">Contrato a verificar *</label>
-        <input value={verifContract} onChange={(e) => setVerifContract(e.target.value)} placeholder="0x..." className="w-full bg-gray-700 p-2 rounded mb-4" />
+        <div>
+          <label className="block text-sm font-semibold mb-1">Contrato a verificar *</label>
+          <input value={verifContract} onChange={(e) => setVerifContract(e.target.value)} placeholder="0x..." className="w-full border border-gray-300 rounded p-2 text-sm" />
+        </div>
       </div>
 
       {wallet && (
-        <div className="flex justify-center">
-          <button onClick={mintNFT} disabled={isMinting} className={`mt-4 px-6 py-3 rounded text-white ${isMinting ? "bg-gray-600" : "bg-green-600 hover:bg-green-700"}`}>
-            {isMinting ? "⏳ Minteando..." : "🛠️ Crear NFT"}
+        <div className="flex justify-center mt-6">
+          <button onClick={mintNFT} disabled={isMinting} className={`px-6 py-3 rounded-xl text-white font-semibold shadow ${isMinting ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"}`}>
+            {isMinting ? "⏳ Minteando..." : "✨ Crear NFT"}
           </button>
         </div>
       )}
 
       {minted && (
-        <div className="flex justify-center">
-          <button onClick={() => navigate("/isMinted2")} className="mt-4 px-6 py-3 rounded text-white bg-purple-600 hover:bg-purple-700">
+        <div className="flex justify-center mt-4">
+          <button onClick={() => navigate("/isMinted2")} className="bg-purple-500 hover:bg-purple-600 px-6 py-3 rounded-xl text-white font-semibold shadow">
             ✅ Ver NFTs minteados
           </button>
         </div>

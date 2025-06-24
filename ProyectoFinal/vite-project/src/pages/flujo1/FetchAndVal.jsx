@@ -217,141 +217,105 @@ export default function Start() {
     validations.has10NFTs && validations.allMintedBeforeDate;
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6 overflow-x-auto">
-      <h1 className="text-3xl font-bold mb-6 flex items-center gap-2">
-        🖼️ Tus NFTs (ERC-1155)
-      </h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-pink-100 text-gray-800 px-4 py-8 flex items-center justify-center">
+      <div className="w-full max-w-6xl space-y-6">
+        <h1 className="text-3xl font-extrabold text-center text-indigo-600">
+          🖼️ Tus NFTs (ERC-1155)
+        </h1>
 
-      {!wallet ? (
-        <button
-          onClick={connectWallet}
-          className="bg-green-600 text-white px-4 py-2 rounded shadow"
-        >
-          🔌 Conectar Wallet
-        </button>
-      ) : (
-        <div>
-          <p className="mb-4 text-sm text-gray-300">
-            🔐 Wallet conectada: {wallet}
-          </p>
-
-          <button
-            onClick={fetchAllNFTs}
-            className="bg-blue-600 text-white px-4 py-2 rounded shadow"
-          >
-            📥 Obtener NFTs
-          </button>
-
-          {loading && (
-            <p className="mt-4 text-gray-400">
-              🔄 Cargando NFTs desde contrato...
-            </p>
-          )}
-
-          {/* Validation Status */}
-          {nfts.length > 0 && (
-            <div className="mt-6 p-4 bg-gray-800 rounded-lg">
-              <h2 className="text-xl font-semibold mb-3">Validaciones:</h2>
-              <ul className="space-y-2">
-                <li
-                  className={`flex items-center ${
-                    validations.has10NFTs ? "text-green-400" : "text-red-400"
-                  }`}
-                >
-                  {validations.has10NFTs ? "✓" : "✗"} Tienes exactamente 10 NFTs
-                </li>
-                <li
-                  className={`flex items-center ${
-                    validations.allMintedBeforeDate
-                      ? "text-green-400"
-                      : "text-red-400"
-                  }`}
-                >
-                  {validations.allMintedBeforeDate ? "✓" : "✗"} Todos minteados
-                  antes del 28/05/2025
-                </li>
-              </ul>
-
-              {allValidationsPassed ? (
-                <button
-                  onClick={handleRedirect}
-                  className="mt-4 bg-purple-600 text-white px-4 py-2 rounded shadow hover:bg-purple-700"
-                >
-                  🚀 Proceder a Mint
-                </button>
-              ) : (
-                <p className="mt-4 text-red-400">
-                  No cumples con todos los requisitos de validación.
-                </p>
-              )}
+        {!wallet ? (
+          <div className="flex justify-center">
+            <button
+              onClick={connectWallet}
+              className="bg-gradient-to-r from-green-300 to-emerald-400 text-white font-semibold px-6 py-3 rounded-lg shadow hover:from-green-400 hover:to-emerald-500 transition-all"
+            >
+              🔌 Conectar Wallet
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white/60 px-4 py-3 rounded-lg shadow">
+              <span className="text-sm text-gray-600 font-mono">
+                🔐 Wallet conectada: {wallet}
+              </span>
+              <button
+                onClick={fetchAllNFTs}
+                className="bg-gradient-to-r from-blue-300 to-indigo-400 text-white px-6 py-3 rounded-lg shadow hover:from-blue-400 hover:to-indigo-500 transition-all"
+              >
+                📥 Obtener NFTs
+              </button>
             </div>
-          )}
 
-          {/* NFT Table */}
-          {nfts.length > 0 && (
-            <div className="mt-6 overflow-x-auto">
-              <table className="min-w-full table-auto border border-gray-700 text-sm">
-                <thead className="bg-indigo-800 text-white">
-                  <tr>
-                    <th className="px-4 py-2 border border-gray-700">ID</th>
-                    <th className="px-4 py-2 border border-gray-700">Título</th>
-                    <th className="px-4 py-2 border border-gray-700">Tema</th>
-                    <th className="px-4 py-2 border border-gray-700">Clase</th>
-                    <th className="px-4 py-2 border border-gray-700">Alumno</th>
-                    <th className="px-4 py-2 border border-gray-700">
-                      Minteado A
-                    </th>
-                    <th className="px-4 py-2 border border-gray-700">
-                      Minteado por
-                    </th>
-                    <th className="px-4 py-2 border border-gray-700">Fecha</th>
-                    <th className="px-4 py-2 border border-gray-700">
-                      Minteado desde 0x0
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {nfts.map((nft, idx) => (
-                    <tr key={idx} className="hover:bg-gray-800">
-                      <td className="px-4 py-2 border border-gray-700">
-                        {nft.id}
-                      </td>
-                      <td className="px-4 py-2 border border-gray-700">
-                        {nft.title}
-                      </td>
-                      <td className="px-4 py-2 border border-gray-700">
-                        {nft.tema}
-                      </td>
-                      <td className="px-4 py-2 border border-gray-700">
-                        {nft.clase}
-                      </td>
-                      <td className="px-4 py-2 border border-gray-700">
-                        {nft.alumno}
-                      </td>
-                      <td className="px-4 py-2 border border-gray-700">
-                        {nft.minteadoA}
-                      </td>
-                      <td className="px-4 py-2 border border-gray-700">
-                        {nft.minteadoPor}
-                      </td>
-                      <td className="px-4 py-2 border border-gray-700">
-                        {nft.fechaMint}
-                      </td>
-                      <td className="px-4 py-2 border border-gray-700">
-                        {nft.esMinteadoDesdeCero ? "Sí" : "No"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+            {loading && (
+              <p className="text-indigo-500 italic text-center">
+                🔄 Cargando NFTs desde contrato...
+              </p>
+            )}
 
-          {!loading && nfts.length === 0 && (
-            <p className="mt-6 text-gray-500">No se encontraron NFTs.</p>
-          )}
-        </div>
-      )}
+            {nfts.length > 0 && (
+              <div className="p-6 bg-white/80 backdrop-blur-md rounded-2xl shadow-xl">
+                <h2 className="text-xl font-bold mb-4 text-indigo-700 text-center">
+                  ✅ Validaciones
+                </h2>
+                <ul className="space-y-2 text-base text-center">
+                  <li className={validations.has10NFTs ? "text-green-600" : "text-rose-500"}>
+                    {validations.has10NFTs ? "✓" : "✗"} Tienes exactamente 10 NFTs
+                  </li>
+                  <li className={validations.allMintedBeforeDate ? "text-green-600" : "text-rose-500"}>
+                    {validations.allMintedBeforeDate ? "✓" : "✗"} Todos minteados antes del 28/05/2025
+                  </li>
+                </ul>
+                {allValidationsPassed ? (
+                  <div className="flex justify-center">
+                    <button
+                      onClick={handleRedirect}
+                      className="mt-6 bg-gradient-to-r from-purple-400 to-pink-400 text-white font-semibold px-6 py-3 rounded-lg shadow hover:from-purple-500 hover:to-pink-500 transition-all"
+                    >
+                      🚀 Proceder a Mint
+                    </button>
+                  </div>
+                ) : (
+                  <p className="mt-4 text-rose-500 italic text-center">
+                    No cumples con todos los requisitos de validación.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {nfts.length > 0 && (
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {nfts.map((nft, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white/80 backdrop-blur-md shadow-md rounded-xl p-4 border border-indigo-200 hover:shadow-xl transition-all"
+                  >
+                    <img
+                      src={nft.image}
+                      alt={`NFT ${nft.id}`}
+                      className="w-full h-48 object-cover rounded-lg mb-3"
+                    />
+                    <h3 className="text-lg font-bold text-indigo-700 mb-1">{nft.title}</h3>
+                    <p className="text-sm text-gray-700 mb-1">🎓 Tema: {nft.tema}</p>
+                    <p className="text-sm text-gray-700 mb-1">📚 Clase: {nft.clase}</p>
+                    <p className="text-sm text-gray-700 mb-1">👤 Alumno: {nft.alumno}</p>
+                    <p className="text-sm text-gray-700 mb-1">🧾 ID: {nft.id}</p>
+                    <p className="text-sm text-gray-700 mb-1">📤 Minteado a: {nft.minteadoA}</p>
+                    <p className="text-sm text-gray-700 mb-1">👨‍🏫 Minteado por: {nft.minteadoPor}</p>
+                    <p className="text-sm text-gray-700 mb-1">📅 Fecha: {nft.fechaMint}</p>
+                    <p className={`text-sm font-semibold ${nft.esMinteadoDesdeCero ? "text-green-600" : "text-red-600"}`}>
+                      {nft.esMinteadoDesdeCero ? "✅ Desde 0x0" : "❌ No desde 0x0"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {!loading && nfts.length === 0 && (
+              <p className="text-gray-500 italic text-center">No se encontraron NFTs.</p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

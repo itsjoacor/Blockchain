@@ -8,28 +8,30 @@ export default function Instructions() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-6">
-      <h1 className="text-3xl font-bold mb-4">📘 Instrucciones</h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-pink-100 text-gray-800 flex flex-col items-center justify-center px-6 py-12">
+      <div className="bg-white shadow-xl border border-indigo-200 rounded-2xl p-8 max-w-2xl w-full text-center">
+        <h1 className="text-4xl font-bold text-indigo-700 mb-4 drop-shadow">
+          📘 Instrucciones
+        </h1>
 
-      <p className="text-gray-300 max-w-xl text-center mb-8">
-        Bienvenido a la dApp de certificación. En los próximos pasos, vas a poder conectar tu wallet,
-        visualizar tus NFTs y, si cumplís con los requisitos, vas a poder mintear un NFT especial
-         que será enviado automáticamente a los destinatarios predefinidos.
-      </p>
+        <p className="text-gray-600 mb-6 text-lg">
+          Bienvenido a la dApp de certificación. En los próximos pasos vas a poder:
+        </p>
 
-      <ul className="list-disc text-left text-gray-200 mb-6 space-y-2">
-        <li>Conectá tu wallet usando MetaMask.</li>
-        <li>Se verifica que tengo los NFTs necesarios para continuar.</li>
-        <li>Completá el formulario solo si se valida correctamente.</li>
-        <li>El NFT será enviado automáticamente a Dani y Pablo.</li>
-      </ul>
+        <ul className="text-left text-gray-700 mb-6 space-y-3 list-disc pl-6 text-base">
+          <li>🔗 Conectar tu wallet usando MetaMask.</li>
+          <li>✅ Verificar si tenés los NFTs requeridos para continuar.</li>
+          <li>📝 Completar el formulario si cumplís con los requisitos.</li>
+          <li>📤 El NFT será enviado automáticamente a <strong>Dani</strong> y <strong>Pablo</strong>.</li>
+        </ul>
 
-      <button
-        onClick={handleStart}
-        className="bg-indigo-600 hover:bg-indigo-700 transition px-6 py-3 rounded text-white font-semibold shadow"
-      >
-        ✅ Comenzar
-      </button>
+        <button
+          onClick={handleStart}
+          className="mt-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg shadow transition-all"
+        >
+          ✅ Comenzar
+        </button>
+      </div>
     </div>
   );
 }

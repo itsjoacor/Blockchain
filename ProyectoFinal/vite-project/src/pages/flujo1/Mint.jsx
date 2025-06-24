@@ -35,11 +35,10 @@ const Mint2 = () => {
   const [isMinting, setIsMinting] = useState(false);
   const [error, setError] = useState("");
   const [mintedAll, setMintedAll] = useState(false);
-
   const navigate = useNavigate();
 
   const connectWallet = async () => {
-    if (!window.ethereum) return setError("Instala MetaMask");
+    if (!window.ethereum) return setError("Instalá MetaMask");
 
     try {
       await window.ethereum.request({ method: "eth_requestAccounts" });
@@ -97,108 +96,98 @@ const Mint2 = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white p-6">
-      <div className="flex justify-between items-start mb-6">
-        <h1 className="text-4xl font-bold text-center w-full">🎨 Crear NFT (ERC-1155)</h1>
-        <div className="flex gap-2 absolute right-6 top-6">
-          <a
-            href={`https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm"
-          >
-            🔍 Ver contrato en Etherscan
-          </a>
-          <a
-            href={`https://github.com/itsjoacor/nft-image/blob/main/README.md`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-          >
-            🧩 Ver contrato en Github
-          </a>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-white to-pink-100 text-gray-800 p-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-4xl font-extrabold text-indigo-700 text-center w-full drop-shadow">
+            🪄 Crear NFT con Metadata
+          </h1>
         </div>
-      </div>
 
-      <div className="bg-gray-800 p-4 rounded-lg mb-6 max-w-3xl mx-auto text-sm">
-        {wallet ? (
-          <p className="text-green-400 mb-2">💳 Wallet conectada: <span className="text-white">{wallet}</span></p>
-        ) : (
-          <button
-            onClick={connectWallet}
-            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white mb-2"
-          >
-            🔌 Conectar Wallet
-          </button>
+        <div className="bg-white rounded-xl shadow-lg p-6 mb-6 border border-indigo-200">
+          {wallet ? (
+            <p className="text-sm text-green-600 mb-3">
+              ✅ Wallet conectada: <span className="font-mono">{wallet}</span>
+            </p>
+          ) : (
+            <button
+              onClick={connectWallet}
+              className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded font-semibold mb-4"
+            >
+              🔌 Conectar Wallet
+            </button>
+          )}
+          <div className="text-sm text-gray-600 space-y-1">
+            <p>📦 Contrato: <span className="text-indigo-600">{CONTRACT_ADDRESS}</span></p>
+            <p>👤 Address Dani: <span className="text-pink-600">{ADDRESS_DANIEL}</span></p>
+            <p>👤 Address Pablo: <span className="text-pink-600">{ADDRESS_PABLO}</span></p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 text-red-800 border border-red-300 rounded-lg">
+            {error}
+          </div>
         )}
-        <p className="mb-1">📦 Contrato: <span className="text-blue-400">{CONTRACT_ADDRESS}</span></p>
-        <p className="mb-1">👤 Address Dani: <span className="text-blue-300">{ADDRESS_DANIEL}</span></p>
-        <p className="mb-1">👤 Address Pablo: <span className="text-blue-300">{ADDRESS_PABLO}</span></p>
-      </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-800 text-red-100 rounded max-w-2xl mx-auto">{error}</div>
-      )}
-
-      <div className="bg-gray-800 p-6 rounded-lg mb-6 max-w-xl mx-auto">
-        <label className="block mb-2">Título *</label>
-        <input
-          name="titulo"
-          value={nftData.titulo}
-          onChange={handleInputChange}
-          className="w-full bg-gray-700 p-2 rounded mb-4"
-        />
-        <label className="block mb-2">Descripción *</label>
-        <textarea
-          name="description"
-          value={nftData.description}
-          onChange={handleInputChange}
-          className="w-full bg-gray-700 p-2 rounded mb-4"
-        />
-        <label className="block mb-2">Nombre</label>
-        <input
-          name="nombre"
-          value={nftData.nombre}
-          onChange={handleInputChange}
-          className="w-full bg-gray-700 p-2 rounded mb-4"
-        />
-        <label className="block mb-2">Fecha</label>
-        <input
-          type="date"
-          name="fecha"
-          value={nftData.fecha}
-          onChange={handleInputChange}
-          className="w-full bg-gray-700 p-2 rounded"
-        />
-      </div>
-      {/* Botón de mint centrado */}
-      {wallet && (
-        <div className="flex justify-center">
-          <button
-            onClick={mintNFT}
-            disabled={isMinting}
-            className={`mt-4 px-6 py-3 rounded text-white ${isMinting
-                ? "bg-gray-600 cursor-not-allowed"
-                : "bg-green-600 hover:bg-green-700"
-              }`}
-          >
-            {isMinting ? "⏳ Minteando..." : "🛠️ Crear NFT"}
-          </button>
+        <div className="bg-white rounded-xl shadow-md p-6 border border-indigo-200 mb-6">
+          <label className="block mb-2 text-sm font-semibold">Título *</label>
+          <input
+            name="titulo"
+            value={nftData.titulo}
+            onChange={handleInputChange}
+            className="w-full p-2 mb-4 border border-indigo-300 rounded"
+          />
+          <label className="block mb-2 text-sm font-semibold">Descripción *</label>
+          <textarea
+            name="description"
+            value={nftData.description}
+            onChange={handleInputChange}
+            className="w-full p-2 mb-4 border border-indigo-300 rounded"
+          />
+          <label className="block mb-2 text-sm font-semibold">Nombre</label>
+          <input
+            name="nombre"
+            value={nftData.nombre}
+            onChange={handleInputChange}
+            className="w-full p-2 mb-4 border border-indigo-300 rounded"
+          />
+          <label className="block mb-2 text-sm font-semibold">Fecha</label>
+          <input
+            type="date"
+            name="fecha"
+            value={nftData.fecha}
+            onChange={handleInputChange}
+            className="w-full p-2 border border-indigo-300 rounded"
+          />
         </div>
-      )}
 
-      {/* Botón para redirigir a ver minteados */}
-      {mintedAll && (
-        <div className="flex justify-center">
-          <button
-            onClick={() => navigate("/isMinted")}
-            className="mt-4 px-6 py-3 rounded text-white bg-purple-600 hover:bg-purple-700"
-          >
-            ✅ Ver NFTs minteados
-          </button>
-        </div>
-      )}
+        {wallet && (
+          <div className="text-center">
+            <button
+              onClick={mintNFT}
+              disabled={isMinting}
+              className={`px-6 py-3 rounded text-white font-semibold transition-colors ${isMinting
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-green-500 hover:bg-green-600"
+                }`}
+            >
+              {isMinting ? "⏳ Minteando..." : "🚀 Mintear NFT"}
+            </button>
+          </div>
+        )}
 
+        {mintedAll && (
+          <div className="text-center mt-6">
+            <button
+              onClick={() => navigate("/isMinted")}
+              className="px-6 py-3 bg-purple-500 hover:bg-purple-600 text-white font-semibold rounded"
+            >
+              ✅ Ver NFTs minteados
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

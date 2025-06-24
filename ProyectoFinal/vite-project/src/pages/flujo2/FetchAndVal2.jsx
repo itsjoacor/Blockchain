@@ -11,7 +11,6 @@ const ABI = [
 export default function MintedByWallet() {
   const [wallet, setWallet] = useState(null);
   const [attemptedLoad, setAttemptedLoad] = useState(false);
-
   const [mintedNFTs, setMintedNFTs] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,7 +26,7 @@ export default function MintedByWallet() {
   };
 
   const resolveImageUrl = (url) => {
-    if (!url) return "";
+    if (!url) return "https://placehold.co/300x300?text=Sin+Imagen";
     if (url.startsWith("ipfs://")) {
       const hash = url.replace("ipfs://", "");
       return `https://nftstorage.link/ipfs/${hash}`;
@@ -76,9 +75,8 @@ export default function MintedByWallet() {
       console.error("Error al obtener NFTs:", err);
     } finally {
       setLoading(false);
-      setAttemptedLoad(true); // se ejecutó la carga
+      setAttemptedLoad(true);
     }
-
   };
 
   useEffect(() => {
@@ -88,83 +86,72 @@ export default function MintedByWallet() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white p-6">
-      <h1 className="text-3xl font-bold mb-4">🎨 NFTs minteados por tu wallet</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-pink-100 text-gray-800 p-6">
+      <h1 className="text-4xl font-extrabold text-center mb-8 text-indigo-600 drop-shadow-md">
+        🎨 NFTs Minteados por tu Wallet en el contrato del flujo 1
+      </h1>
 
       {!wallet ? (
-        <button onClick={connectWallet} className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700">
-          🔌 Conectar Wallet
-        </button>
+        <div className="flex justify-center">
+          <button
+            onClick={connectWallet}
+            className="bg-indigo-500 hover:bg-indigo-600 px-6 py-3 rounded-xl text-white font-semibold shadow-md"
+          >
+            🔌 Conectar Wallet
+          </button>
+        </div>
       ) : (
-        <div className="mb-4">
-          <p className="text-sm">Wallet conectada: {wallet}</p>
-          <p className="text-sm">Contrato: {CONTRACT_ADDRESS}</p>
-          <button onClick={fetchMintedNFTs} className="bg-blue-600 mt-2 px-4 py-2 rounded hover:bg-blue-700">
+        <div className="text-center space-y-2 mb-6">
+          <p className="text-sm text-gray-600">👛 Wallet: {wallet}</p>
+          <p className="text-sm text-gray-600">📜 Contrato: {CONTRACT_ADDRESS}</p>
+          <button
+            onClick={fetchMintedNFTs}
+            className="mt-2 bg-blue-500 hover:bg-blue-600 px-6 py-2 rounded-xl text-white font-semibold shadow"
+          >
             📥 Ver NFTs minteados
           </button>
         </div>
       )}
 
-      {loading && <p className="mt-4 text-gray-300">⏳ Cargando NFTs...</p>}
+      {loading && <p className="mt-6 text-center text-gray-500">⏳ Cargando NFTs...</p>}
 
-      {mintedNFTs.length > 0 && (
-        <>
-          <div className="overflow-x-auto mt-6">
-            <table className="min-w-full border border-gray-700 text-sm text-white">
-              <thead className="bg-indigo-800">
-                <tr>
-                  <th className="border px-3 py-2">Token ID</th>
-                  <th className="border px-3 py-2">Título</th>
-                  <th className="border px-3 py-2">Descripción</th>
-                  <th className="border px-3 py-2">Nombre</th>
-                  <th className="border px-3 py-2">Fecha</th>
-                  <th className="border px-3 py-2">Minted From</th>
-                  <th className="border px-3 py-2">Minted To</th>
-                  <th className="border px-3 py-2">Operator</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mintedNFTs.map((nft) => (
-                  <tr key={nft.tokenId} className="bg-gray-900 hover:bg-gray-800">
-                    <td className="border px-3 py-2">{nft.tokenId}</td>
-                    <td className="border px-3 py-2">{nft.titulo}</td>
-                    <td className="border px-3 py-2">{nft.descripcion}</td>
-                    <td className="border px-3 py-2">{nft.nombre}</td>
-                    <td className="border px-3 py-2">{nft.fecha}</td>
-                    <td className="border px-3 py-2">{nft.mintedFrom}</td>
-                    <td className="border px-3 py-2">{nft.mintedTo}</td>
-                    <td className="border px-3 py-2">{nft.operator}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+        {mintedNFTs.map((nft) => (
+          <div
+            key={nft.tokenId}
+            className="bg-white rounded-2xl shadow-lg p-4 border border-indigo-200 flex flex-col items-center text-center"
+          >
+            <img
+              src={nft.imageUrl}
+              alt={`NFT ${nft.tokenId}`}
+              className="w-40 h-40 object-contain mb-3 rounded border"
+              onError={(e) => {
+                e.target.src = "https://placehold.co/300x300?text=Error+Imagen";
+              }}
+            />
+            <h2 className="text-lg font-bold text-indigo-600 mb-2">{nft.titulo}</h2>
+            <p className="text-sm text-gray-700">🧾 {nft.nombre}</p>
+            <p className="text-sm text-gray-700">📄 {nft.descripcion}</p>
+            <p className="text-sm text-gray-600">📅 {nft.fecha}</p>
+            <p className="text-xs text-gray-400 mt-2">🆔 Token ID: {nft.tokenId}</p>
           </div>
+        ))}
+      </div>
 
-          <div className="flex justify-center mt-6">
-            <button
-              onClick={() => navigate("/mint2")}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded"
-            >
-              ✨ Mintear
-            </button>
-          </div>
-        </>
-      )}
-
-      {!loading && mintedNFTs.length === 0 && wallet && (
-        <p className="mt-6 text-gray-400">No se encontraron NFTs minteados por esta wallet.</p>
-      )}
       {attemptedLoad && !loading && (
-        <div className="flex justify-center mt-6">
+        <div className="flex justify-center mt-10">
           <button
             onClick={() => navigate("/mint2")}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded"
+            className="bg-green-500 hover:bg-green-600 px-8 py-3 rounded-xl text-white font-semibold shadow-lg"
           >
             ✨ Mintear
           </button>
         </div>
       )}
 
+      {!loading && mintedNFTs.length === 0 && attemptedLoad && (
+        <p className="mt-8 text-center text-gray-500">No se encontraron NFTs minteados por esta wallet.</p>
+      )}
     </div>
   );
 }
