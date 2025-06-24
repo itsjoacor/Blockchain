@@ -88,7 +88,7 @@ export default function MintedByWallet() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-pink-100 text-gray-800 p-6">
       <h1 className="text-4xl font-extrabold text-center mb-8 text-indigo-600 drop-shadow-md">
-        🎨 NFTs Minteados por tu Wallet en el contrato del flujo 1
+        🎨 NFTs Minteados a tu wallet del flujo 1
       </h1>
 
       {!wallet ? (
