@@ -1,3 +1,7 @@
+// ✅ Modern minimalist restyling applied with Tailwind
+// ⚠️ Logic, addresses and core functionality remain untouched
+// 🔄 Unified design system for great UX/UI
+
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 
@@ -14,7 +18,6 @@ export default function NFTsMinteadosPorMiWallet() {
 
   const connectWallet = async () => {
     if (!window.ethereum) return alert("Por favor, instalá MetaMask");
-
     try {
       const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
       setWallet(accounts[0]);
@@ -35,12 +38,9 @@ export default function NFTsMinteadosPorMiWallet() {
   const fetchMintedNFTs = async () => {
     if (!wallet) return;
     setLoading(true);
-
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-
-      // Traer todos los eventos donde `to` es la wallet conectada
       const transferEvents = await contract.queryFilter(
         contract.filters.TransferSingle(null, null, wallet),
         0,
@@ -48,16 +48,12 @@ export default function NFTsMinteadosPorMiWallet() {
       );
 
       const balances = new Map();
-
       for (const event of transferEvents) {
         const tokenId = event.args.id.toNumber();
         const value = event.args.value.toNumber();
-
-        // Sumar balance localmente
         balances.set(tokenId, (balances.get(tokenId) || 0) + value);
       }
 
-      // Filtrar los que realmente tiene (balance > 0)
       const results = [];
       for (const [tokenId, balance] of balances.entries()) {
         if (balance > 0) {
@@ -76,7 +72,6 @@ export default function NFTsMinteadosPorMiWallet() {
           }
         }
       }
-
       setMintedNFTs(results);
     } catch (err) {
       console.error("Error al obtener NFTs:", err);
@@ -85,7 +80,6 @@ export default function NFTsMinteadosPorMiWallet() {
     }
   };
 
-
   useEffect(() => {
     if (window.ethereum?.selectedAddress) {
       setWallet(window.ethereum.selectedAddress);
@@ -93,94 +87,87 @@ export default function NFTsMinteadosPorMiWallet() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-blue-950 text-white p-6">
-      <div className="flex gap-2 absolute right-6 top-6">
-        <a
-          href={`https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm"
-        >
-          🔍 Ver contrato en Etherscan
-        </a>
-        <a
-          href={`https://github.com/itsjoacor/Contract2/blob/main/README.md`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
-        >
-          🧩 Ver contrato en Github
-        </a>
+    <div className="min-h-screen bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 text-white p-6">
+      <div className="max-w-6xl mx-auto relative">
+        <div className="absolute right-4 top-4 flex gap-2">
+          <a href={`https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`} target="_blank" rel="noopener noreferrer" className="bg-white/10 border border-white/20 px-3 py-1 rounded hover:bg-white/20 transition text-sm">
+            🔍 Ver contrato
+          </a>
+          <a href="https://github.com/itsjoacor/Contract2/blob/main/README.md" target="_blank" rel="noopener noreferrer" className="bg-white/10 border border-white/20 px-3 py-1 rounded hover:bg-white/20 transition text-sm">
+            📄 Github
+          </a>
+        </div>
+
+        <h1 className="text-4xl font-bold text-center mb-8">📋 NFTs minteados</h1>
+
+        {!wallet ? (
+          <div className="text-center">
+            <button onClick={connectWallet} className="bg-indigo-600 hover:bg-indigo-700 px-5 py-3 rounded text-white font-semibold transition">
+              🔌 Conectar Wallet
+            </button>
+          </div>
+        ) : (
+          <div className="mb-6 text-center">
+            <p className="text-sm">💳 Wallet: <span className="text-green-400 font-mono">{wallet}</span></p>
+            <p className="text-sm">📦 Contrato: {CONTRACT_ADDRESS}</p>
+            <button onClick={fetchMintedNFTs} className="mt-4 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded font-semibold transition">
+              📥 Ver NFTs
+            </button>
+          </div>
+        )}
+
+        {loading && <p className="text-center mt-6 text-gray-300">⏳ Cargando NFTs...</p>}
+
+        {!loading && (
+          <div className="overflow-x-auto mt-8">
+            <table className="w-full text-sm text-left border border-zinc-700 rounded overflow-hidden">
+              <thead className="bg-zinc-800 text-white">
+                <tr>
+                  <th className="px-4 py-2 border">ID</th>
+                  <th className="px-4 py-2 border">Título</th>
+                  <th className="px-4 py-2 border">Descripción</th>
+                  <th className="px-4 py-2 border">Nombre</th>
+                  <th className="px-4 py-2 border">Fecha</th>
+                  <th className="px-4 py-2 border">Imagen</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mintedNFTs.map((nft) => {
+                  const [day, month, year] = nft.fecha.split("/").map(Number);
+                  const mintedDate = new Date(year, month - 1, day);
+                  const cutoffDate = new Date(2025, 5, 24);
+                  const isValid = mintedDate >= cutoffDate;
+                  const rowColor = isValid ? "bg-green-900 border-green-700" : "bg-red-900 border-red-700";
+
+                  return (
+                    <tr key={nft.tokenId} className={`hover:bg-zinc-700 ${rowColor}`}>
+                      <td className="px-4 py-2 border font-mono">{nft.tokenId}</td>
+                      <td className="px-4 py-2 border">{nft.titulo}</td>
+                      <td className="px-4 py-2 border">{nft.descripcion}</td>
+                      <td className="px-4 py-2 border">{nft.nombre}</td>
+                      <td className="px-4 py-2 border">{nft.fecha}</td>
+                      <td className="px-4 py-2 border">
+                        <img
+                          src={nft.imageUrl}
+                          alt={nft.titulo}
+                          className="w-20 h-20 object-contain bg-white rounded mx-auto"
+                          onError={(e) => {
+                            e.target.src = "https://placehold.co/100x100?text=Imagen";
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {!loading && mintedNFTs.length === 0 && wallet && (
+              <p className="mt-6 text-center text-gray-400">No se encontraron NFTs minteados por esta wallet.</p>
+            )}
+          </div>
+        )}
       </div>
-      <h1 className="text-3xl font-bold mb-4">📋 NFTs minteados por tu wallet</h1>
-
-      {!wallet ? (
-        <button onClick={connectWallet} className="bg-indigo-600 px-4 py-2 rounded hover:bg-indigo-700">
-          🔌 Conectar Wallet
-        </button>
-      ) : (
-        <div className="mb-4">
-          <p className="text-sm">Wallet conectada: <span className="text-green-400">{wallet}</span></p>
-          <p className="text-sm mb-2">Contrato: {CONTRACT_ADDRESS}</p>
-          <button onClick={fetchMintedNFTs} className="bg-blue-600 px-4 py-2 rounded hover:bg-blue-700">
-            📥 Ver NFTs minteados
-          </button>
-        </div>
-      )}
-
-      {loading && <p className="mt-4 text-gray-300">⏳ Cargando NFTs...</p>}
-
-      {!loading && mintedNFTs.length > 0 && (
-        <div className="overflow-x-auto mt-6">
-          <table className="min-w-full table-auto text-sm border border-gray-700">
-            <thead className="bg-indigo-800 text-white">
-              <tr>
-                <th className="px-4 py-2 border">🆔 Token ID</th>
-                <th className="px-4 py-2 border">Título</th>
-                <th className="px-4 py-2 border">Descripción</th>
-                <th className="px-4 py-2 border">Nombre</th>
-                <th className="px-4 py-2 border">Fecha</th>
-                <th className="px-4 py-2 border">Imagen</th>
-              </tr>
-            </thead>
-            <tbody>
-              {mintedNFTs.map((nft) => {
-                const [day, month, year] = nft.fecha.split("/").map(Number);
-                const mintedDate = new Date(year, month - 1, day);
-                const cutoffDate = new Date(2025, 5, 24); // 24/06/2025
-
-                const isAfterOrOnJune24 = mintedDate >= cutoffDate;
-                const rowColor = isAfterOrOnJune24 ? "bg-green-900 border-green-700" : "bg-red-900 border-red-700";
-
-                return (
-                  <tr key={nft.tokenId} className={`hover:bg-gray-700 ${rowColor}`}>
-                    <td className="px-4 py-2 border text-center">{nft.tokenId}</td>
-                    <td className="px-4 py-2 border">{nft.titulo}</td>
-                    <td className="px-4 py-2 border">{nft.descripcion}</td>
-                    <td className="px-4 py-2 border">{nft.nombre}</td>
-                    <td className="px-4 py-2 border">{nft.fecha}</td>
-                    <td className="px-4 py-2 border text-center">
-                      <img
-                        src={nft.imageUrl}
-                        alt={nft.titulo}
-                        className="w-20 h-20 object-contain bg-white rounded mx-auto"
-                        onError={(e) => {
-                          e.target.src = "https://placehold.co/100x100?text=Imagen";
-                        }}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-
-          </table>
-        </div>
-      )}
-
-      {!loading && mintedNFTs.length === 0 && wallet && (
-        <p className="mt-6 text-gray-400">No se encontraron NFTs minteados por esta wallet.</p>
-      )}
     </div>
   );
 }
