@@ -14,7 +14,7 @@ export default function Instructions() {
       <p className="text-gray-300 max-w-xl text-center mb-8">
         Bienvenido a la dApp de certificación. En los próximos pasos, vas a poder conectar tu wallet,
         visualizar tus NFTs y, si cumplís con los requisitos, vas a poder mintear un NFT especial
-        de tipo <strong>"TP"</strong> que será enviado automáticamente a los destinatarios predefinidos.
+         que será enviado automáticamente a los destinatarios predefinidos.
       </p>
 
       <ul className="list-disc text-left text-gray-200 mb-6 space-y-2">

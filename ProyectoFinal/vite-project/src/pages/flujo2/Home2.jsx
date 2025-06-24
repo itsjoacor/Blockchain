@@ -19,7 +19,7 @@ const Home = () => {
         🚀 Blockchain Project
       </h1>
       <p className="mt-6 text-xl text-gray-300 max-w-2xl">
-        Ya casi esta terminado.... comencemos con el flujo 2.
+        ...Comencemos con la promocion...
       </p>
 
       <div className="mt-12 border border-blue-500 rounded-xl px-6 py-6 shadow-lg hover:scale-105 transition-transform space-y-4">

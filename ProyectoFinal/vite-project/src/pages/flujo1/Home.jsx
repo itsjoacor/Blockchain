@@ -19,8 +19,8 @@ const Home = () => {
         🚀 Blockchain Project
       </h1>
       <p className="mt-6 text-xl text-gray-300 max-w-2xl">
-        En construcción... Una experiencia descentralizada, segura y del futuro
-        está por llegar, sobre todo para promocionar.,
+        ...Una experiencia descentralizada, segura y del futuro
+        Para poder validar la promocion de tus alumnos..
       </p>
 
       <div className="mt-12 border border-blue-500 rounded-xl px-6 py-6 shadow-lg hover:scale-105 transition-transform space-y-4">

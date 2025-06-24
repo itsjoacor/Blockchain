@@ -12,15 +12,15 @@ export default function Instructions() {
       <h1 className="text-3xl font-bold mb-4">📘 Instrucciones</h1>
 
       <p className="text-gray-300 max-w-xl text-center mb-8">
-        🎓 Bienvenido a la dApp de promoción con NFT tipo “P” En esta sección
-        vas a poder conectar tu wallet, ingresar el contrato de tus NFTs y, si
-        cumplís con los requisitos, se activará la opción para mintear un NFT
-        especial de tipo “P”. 🧩 Pasos del proceso: Conectá tu wallet usando
-        MetaMask. Ingresá la dirección del contrato donde tenés tus NFTs.
-        Visualizá tus NFTs asociados a ese contrato. Si cumplís con las
-        condiciones requeridas, vas a poder continuar al formulario. El NFT “P”
-        se minteará automáticamente y será enviado a la wallet fija de
-        promoción. 🛑 Si no cumplís c
+        🎓 Bienvenido a la dApp de promoción con NFT.
+        En esta sección vas a poder conectar tu wallet, si
+        cumplís con los requisitos, sobre los NFTs minteados previamenta a los profesores sobre la direccion de tu contrato, 
+        podras mintear el NFT con el objetivo de promocionar la materia.
+        Las validaciones son On-chain, de no cumplirlas, tu transaccion sera rechazada.
+        🧩 Pasos del proceso: Conectá tu wallet usando
+        MetaMask.
+        Ingresá la dirección del contrato donde tenés tus NFTs, podes usar el copy & paste rapido previsto.
+        Visualizá tus NFTs asociados a ese contrato. 
       </p>
       <button
         onClick={handleStart}

@@ -161,9 +161,19 @@ export default function MintedByWallet() {
         })}
       </div>
 
-      {!loading && mintedNFTs.length === 0 && wallet && (
-        <p className="mt-6 text-gray-400">No se encontraron NFTs minteados por esta wallet.</p>
-      )}
-    </div>
-  );
+      <div className="flex gap-2 absolute right-6 top-6">
+        <a
+          onClick={() => navigate("/2")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm"
+        >
+          🔍 Proceder al flujo 2!
+        </a>
+
+        {!loading && mintedNFTs.length === 0 && wallet && (
+          <p className="mt-6 text-gray-400">No se encontraron NFTs minteados por esta wallet.</p>
+        )}
+      </div>
+      );
 }
