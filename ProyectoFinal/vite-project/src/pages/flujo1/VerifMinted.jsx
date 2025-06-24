@@ -76,6 +76,12 @@ export default function MintedByWallet() {
     }
   };
 
+
+  const handleFlow2 = () => {
+    navigate("/2"); // reemplazá por la ruta real
+  };
+
+
   useEffect(() => {
     if (window.ethereum?.selectedAddress) {
       setWallet(window.ethereum.selectedAddress);
@@ -159,21 +165,21 @@ export default function MintedByWallet() {
             </div>
           );
         })}
-      </div>
 
-      <div className="flex gap-2 absolute right-6 top-6">
-        <a
-          onClick={() => navigate("/2")}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm"
+
+        <button
+          onClick={handleFlow2}
+          className="bg-indigo-600 hover:bg-indigo-700 transition px-6 py-3 rounded text-white font-semibold shadow"
         >
-          🔍 Proceder al flujo 2!
-        </a>
+          ✅ Comenzar flujo 2
+        </button>
+        ¿
 
-        {!loading && mintedNFTs.length === 0 && wallet && (
-          <p className="mt-6 text-gray-400">No se encontraron NFTs minteados por esta wallet.</p>
-        )}
       </div>
-      );
+
+      {!loading && mintedNFTs.length === 0 && wallet && (
+        <p className="mt-6 text-gray-400">No se encontraron NFTs minteados por esta wallet.</p>
+      )}
+    </div>
+  );
 }
