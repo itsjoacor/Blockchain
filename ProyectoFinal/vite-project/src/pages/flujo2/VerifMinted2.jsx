@@ -124,7 +124,7 @@ export default function NFTsMinteadosPorMiWallet() {
               <thead className="bg-zinc-800 text-white">
                 <tr>
                   <th className="px-4 py-2 border">ID</th>
-                  <th className="px-4 py-2 border">Título</th>
+                  <th className="px-4 py-2 border">Títul</th>
                   <th className="px-4 py-2 border">Descripción</th>
                   <th className="px-4 py-2 border">Nombre</th>
                   <th className="px-4 py-2 border">Fecha</th>
