@@ -1,10 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/flujo1/Home";
-import OldPage from "./pages/flujo1/OldPage";
-import Instructions from "./pages/flujo1/Instructions";
-import FetchAndVal from "./pages/flujo1/FetchAndVal";
-import Mint from "./pages/flujo1/Mint";
-import VerifyMinted from "./pages/flujo1/VerifMinted";
 
 import Home2 from "./pages/flujo2/Home2";
 import OldPage2 from "./pages/flujo2/OldPage2";
