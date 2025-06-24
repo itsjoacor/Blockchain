@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Home2 from "./pages/flujo2/Home2";
 import OldPage2 from "./pages/flujo2/OldPage2";
@@ -11,6 +11,7 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<Navigate to="/2" />} />
         <Route path="/2" element={<Home2 />} />
         <Route path="/instructions2" element={<Instructions2 />} />
         <Route path="/oldP2" element={<OldPage2 />} />
