@@ -191,7 +191,7 @@ const Mint2 = () => {
       {mintedAll && (
         <div className="flex justify-center">
           <button
-            onClick={() => navigate("/minted")}
+            onClick={() => navigate("/isMinted")}
             className="mt-4 px-6 py-3 rounded text-white bg-purple-600 hover:bg-purple-700"
           >
             ✅ Ver NFTs minteados
